@@ -2,6 +2,13 @@ var stage=null;
 var view = null;
 var interval=null;
 var credentials={ "username": "", "password":"" };
+
+// function initView(){
+//         if (!view){
+//                 view = 'login';
+//         }
+// }
+
 function setupGame(){
 	stage=new Stage(document.getElementById('stage'));
 
@@ -46,10 +53,12 @@ function login(){
                 console.log(jqXHR.status+" "+text_status+JSON.stringify(data));
 
         	$("#ui_login").hide();
-        	$("#ui_play").show();
+                $("#ui_play").show();
+                $("#ui_register").hide();
 
 		setupGame();
-		startGame();
+                startGame();
+                
 
         }).fail(function(err){
                 console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON));
@@ -71,10 +80,88 @@ function test(){
         });
 }
 
+function register(){
+        values = {
+                "username": $('#newusername').val(),
+                "password": $('#pwd').val(),
+                "password2": $('#pwd2').val(),
+                "skill": "",
+                "birthday": $("#birthday").val()
+        };
+        if ($("#beginner").prop("checked") == true) {
+                values["skill"] = "beginner";
+        } else if ($("#intermediate").prop("checked") == true) {
+                values["skill"] = "intermediate";
+        } else if ($("#pro").prop("checked") == true) {
+                values["skill"] = "pro";
+        }
+        //console.log("skill: " + values["skill"]);
+        // check all fields are non empty
+        var error = 0;
+        if (values["username"] == "") {
+                $("#usernameError").html("Please enter username");
+                error = 1;
+        } else { 
+                $("#usernameError").html("");
+        }
+        // check if passwords match
+        if (values["password"] != values["password2"]) {
+                $("#passwordError").html("Passwords do not match");
+                error = 1;
+        } else if (values["password"] == "" && values["password2"] == "") {
+                $("#passwordError").html("Please enter password");
+                error = 1;
+        } else { 
+                $("#passwordError").html("");
+        }
+        if (values["birthday"] == "") {
+                $("#birthdayError").html("Please enter birthday");
+                error = 1;
+        } else { 
+                $("#birthdayError").html("");
+        }
+        if (values["skill"] == "") {
+                $("#skillError").html("Please choose skill level");
+                error = 1;
+        } else { 
+                $("#skillError").html("");
+        }
+        if (error) {
+                return;
+        }
+        // check uniqueness of username
+        // check len of password
+        $.ajax({
+                method: "POST",
+                url: "/api/register",
+                data: JSON.stringify(values),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                processData: false
+        }).done(function(data, text_status, jqXHR){
+                console.log(jqXHR.status+" "+text_status+JSON.stringify(data));
+                $("#ui_login").show();
+                $("#ui_play").hide();
+                $("#ui_register").hide();
+        }).fail(function(err){
+                console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON));
+        });
+}
+
 $(function(){
         // Setup all events here and display the appropriate UI
         $("#loginSubmit").on('click',function(){ login(); });
+        $("#loginRegister").on('click', function() { 
+                $("#ui_login").hide(); 
+                $("#ui_register").show();
+        });
+        $("#registerSubmit").on('click', function(){ register(); })
+        $("#registerBack").on('click', function(){
+                $("#ui_login").show();
+                $("#ui_register").hide();
+        })
         $("#ui_login").show();
         $("#ui_play").hide();
+        $("#ui_register").hide();
 });
 

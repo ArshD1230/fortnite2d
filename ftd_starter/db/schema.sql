@@ -3,7 +3,9 @@
 DROP TABLE ftduser;
 CREATE TABLE ftduser (
 	username VARCHAR(20) PRIMARY KEY,
-	password BYTEA NOT NULL
+	password BYTEA NOT NULL,
+	birthday DATE,
+	skill VARCHAR(15)
 );
 --- Could have also stored as 128 character hex encoded values
 --- select char_length(encode(sha512('abc'), 'hex')); --- returns 128
