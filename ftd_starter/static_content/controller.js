@@ -7,25 +7,80 @@ function setupGame(){
 
 	// https://javascript.info/keyboard-events
 	document.addEventListener('keydown', moveByKey);
+        document.addEventListener('keyup', stopByKey);
+        document.getElementById('stage').addEventListener('click', shootByClick)
+        document.addEventListener('keydown', pickupAmmoByClick);
+        document.getElementById('stage').addEventListener('mousemove', adjustTurret);
 }
+
 function startGame(){
-	interval=setInterval(function(){ stage.draw(); },100);
+	interval=setInterval(function(){ stage.step(); stage.draw(); }, 1);
 }
+
 function pauseGame(){
 	clearInterval(interval);
 	interval=null;
 }
+
+function adjustTurret(event) {
+        stage.player.adjustTurret(event.clientX, event.clientY);
+}
+
 function moveByKey(event){
+
 	var key = event.key;
-	var moveMap = { 
-		'a': new Pair(-5,0),
-		's': new Pair(0,5),
-		'd': new Pair(5,0),
-		'w': new Pair(0,-5)
-	};
-	if(key in moveMap){
-		stage.player.velocity=moveMap[key];
-	}
+        var dx = stage.player.velocity.x;
+        var dy = stage.player.velocity.y;
+
+        if (key == 'w') {
+                dy = -1;
+                stage.player.velocity = new Pair(dx, dy);
+        }
+        if (key == 'a') {
+                dx = -1;
+                stage.player.velocity = new Pair(dx, dy);
+        }
+        if (key == 's') {
+                dy = 1;
+                stage.player.velocity = new Pair(dx, dy);
+        }
+        if (key == 'd') {
+                dx = 1;
+                stage.player.velocity = new Pair(dx, dy);
+        }
+}
+
+function stopByKey (event) {
+        var key = event.key;
+        var dx = stage.player.velocity.x;
+        var dy = stage.player.velocity.y;
+
+        if (key == 'w') {
+                if (dy < 0) {dy = 0;}
+                stage.player.velocity = new Pair(dx, dy);
+        }
+        if (key == 'a') {
+                if (dx < 0) {dx = 0;}
+                stage.player.velocity = new Pair(dx, dy);
+        }
+        if (key == 's') {
+                if (dy > 0) {dy = 0;}
+                stage.player.velocity = new Pair(dx, dy);
+        }
+        if (key == 'd') {
+                if (dx > 0) {dx = 0;}
+                stage.player.velocity = new Pair(dx, dy);
+        }
+}
+
+function shootByClick(event) {
+        stage.player.shoot(event.clientX, event.clientY);
+}
+
+function pickupAmmoByClick(event) {
+        if (event.key == 'e') {
+                stage.player.pickupAmmo();
+        }
 }
 
 function login(){
