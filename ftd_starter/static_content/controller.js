@@ -215,8 +215,21 @@ $(function(){
                 $("#ui_login").show();
                 $("#ui_register").hide();
         })
+        $("#playInstructions").on('click', function(){
+                $("#ui_play").hide();
+                $("#ui_instructions").show();
+        })
+        $("#instructionsBackToGame").on('click', function() {
+                $("#ui_play").show();
+                $("#ui_instructions").hide();
+        })
+        $("#logout").on('click', function() {
+                $("#ui_play").hide();
+                $("#ui_login").show();
+        })
         $("#ui_login").show();
         $("#ui_play").hide();
         $("#ui_register").hide();
+        $("#ui_instructions").hide();
 });
 
