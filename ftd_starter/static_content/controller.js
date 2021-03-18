@@ -1,10 +1,11 @@
 var stage=null;
 var view = null;
 var interval=null;
+var difficulty = null;
 var credentials={ "username": "", "password":"" };
 
 function setupGame(){
-	stage=new Stage(document.getElementById('stage'), 0);
+	stage=new Stage(document.getElementById('stage'), difficulty);
 
         // events
 	document.addEventListener('keydown', moveByKey);
@@ -112,11 +113,7 @@ function login(){
                 console.log(jqXHR.status+" "+text_status+JSON.stringify(data));
 
                 hideAll();
-                $("#ui_play").show();
-                $("nav").show();
-
-		setupGame();
-                startGame();
+                $("#ui_difficulty").show();
                 
 
         }).fail(function(err){
@@ -338,7 +335,8 @@ function hideAll() {
         $("#ui_play").hide();
         $("#ui_instructions").hide();
         $("#ui_leaderboard").hide();
-        $("#ui_profile").hide();     
+        $("#ui_profile").hide();
+        $("#ui_difficulty").hide();
 };
 
 $(function(){
@@ -384,6 +382,21 @@ $(function(){
                 $("nav").hide();
                 $("#ui_login").show();
         });
+
+        $("#difficultySubmit").on('click', function(){
+                if ($("#difficulty").val() == 'easy') {
+                        difficulty = 3;
+                } else if ($("#difficulty").val() == 'medium') {
+                        difficulty = 2;
+                } else if ($("#difficulty").val() == 'hard') {
+                        difficulty = 1;
+                }
+                setupGame();
+                startGame();
+                hideAll();
+                $("#ui_play").show();
+                $("nav").show();
+        })
 
 
         hideAll();
