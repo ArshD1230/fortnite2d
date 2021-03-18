@@ -44,12 +44,14 @@
 			input[type=submit]:hover{
 				color:#FFFFFF;
 				background-color:#12c9ff;
-				border: 2px solid white;
+				border: 2px solid #e5e5e5;
 			}
 			input[type=text], input[type=password] {
 				padding: 5px;
 				margin: 3px;
 				font-size: medium;
+				border-radius: 2px;
+				border: 1px solid grey;
 			}
 			#form{
 				margin: auto; 
@@ -58,7 +60,7 @@
 				width: 350px;
 				border-radius: 2px;
 			}
-			#ui_profile, #ui_difficulty {
+			#ui_profile, #ui_difficulty, #ui_play {
 				text-align: center;
 			}
 		</style>
@@ -82,7 +84,8 @@
 				<input type="text" id="username" placeholder="User Name" />
 				<input type="password" id="password" placeholder="Password" />
 				<input type="submit" id="loginSubmit" value="Login"></br>
-			</br><input type="submit" id="loginRegister" value="Register">
+				<p id="loginError" class="error"></p>
+				</br><input type="submit" id="loginRegister" value="Register">
 			</div>
 		</div>
 		
@@ -101,6 +104,7 @@
 			<center>
 				<canvas id="stage" width="800" height="800" style="border:1px solid black;"> </canvas>
 			</center>
+			</br><input type="submit" id="playRestart" value="Restart">
 		</div>
 
 		<div id="ui_leaderboard">
