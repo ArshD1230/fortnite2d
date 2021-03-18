@@ -14,6 +14,10 @@ class Stage {
 		this.enemySpawnTimer = 0;
 		this.boxSpawnRate = 5000
 		this.boxSpawnTimer = 0;
+		this.assassinSpawnRate = 10000;
+		this.assassinSpawnTimer = 0;
+		this.tankSpawnRate = 20000;
+		this.tankSpawnTimer = 0;
 		this.boxMax = 10;
 		this.boxCount = 10;
 	
@@ -34,14 +38,14 @@ class Stage {
 		// Add the player to the center of the stage
 		var velocity = new Pair(0,0);
 		var radius = 10;
-		var colour= 'rgba(255,0,0,1)';
+		var colour= 'black';
 		var position = new Pair(Math.floor(canvas.width/2), Math.floor(canvas.height/2));
 		this.addPlayer(new Player(this, position, velocity, colour, radius));
 
 		// Add some enemies
 		for (var i = 0; i < 3; i++) {
 			var enemyPosition = new Pair(rand(this.width), rand(this.height));
-			var enemy = new Enemy(this, enemyPosition);
+			var enemy = new Enemy(this, enemyPosition, 10, 'red', 100, 1000, 1/2);
 			this.addActor(enemy);
 		}
 
@@ -100,10 +104,24 @@ class Stage {
 
 		// add enemy if the spawn interval is up
 		if (this.enemySpawnTimer + 1 == this.enemySpawnRate) {
-			var newEnemy = new Enemy(this, new Pair(rand(this.width), rand(this.height)));
+			var newEnemy = new Enemy(this, new Pair(rand(this.width), rand(this.height)), 10, 'red', 100, 1000, 1/2);
 			this.addActor(newEnemy);
 		}
 		this.enemySpawnTimer = (this.enemySpawnTimer + 1) % this.enemySpawnRate;
+
+		// spawn assassin enemy
+		if (this.assassinSpawnTimer + 1 == this.assassinSpawnRate) {
+			var newAssassin = new Enemy(this, new Pair(rand(this.width), rand(this.height)), 10, 'purple', 400, 750, 1);
+			this.addActor(newAssassin);
+		}
+		this.assassinSpawnTimer = (this.assassinSpawnTimer + 1) % this.assassinSpawnRate;
+
+		// spawn assassin enemy
+		if (this.tankSpawnTimer + 1 == this.tankSpawnRate) {
+			var newTank = new Enemy(this, new Pair(rand(this.width), rand(this.height)), 50, 'grey', 2000, 250, 1/3);
+			this.addActor(newTank);
+		}
+		this.tankSpawnTimer = (this.tankSpawnTimer + 1) % this.tankSpawnRate;
 
 		// call step on all the actors
 		for(var i=0;i<this.actors.length;i++){
@@ -151,7 +169,7 @@ class Stage {
 
 	// check if box covers the given x, y, if it does, return that box object, false otherwise
 	checkBoxAt(x, y) {
-		for (var i = 1; i < this.staticActors.length; i++) {
+		for (var i = 0; i < this.staticActors.length; i++) {
 			if (this.staticActors[i].x < x + 10 && x - 10 < this.staticActors[i].x + 100 &&
 				this.staticActors[i].y < y + 10 && y - 10 < this.staticActors[i].y + 100) {
 					return this.staticActors[i];
@@ -222,7 +240,6 @@ class Box {
 class gameCharacter {
 	constructor(stage, position) {
 		this.stage = stage;
-		this.health = 100;
 		this.position = position;
 	}
 
@@ -256,7 +273,8 @@ class gameCharacter {
 	}
 
 	step(){
-		if (this.stage.checkBoxAt(this.position.x + this.velocity.x, this.position.y + this.velocity.y) == false) {
+		if (this.stage.checkBoxAt(this.position.x + this.velocity.x, this.position.y + this.velocity.y) == false /*&&
+			this.stage.checkActorAt(this.position.x + this.velocity.x, this.position.y + this.velocity.y, this) == false*/) {
 			this.position.x=this.position.x+this.velocity.x;
 			this.position.y=this.position.y+this.velocity.y;
 		}
@@ -285,12 +303,12 @@ class gameCharacter {
 		// draw player
 		context.beginPath(); 
 		context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false); 
-		context.fillStyle = 'red';
+		context.fillStyle = this.colour;
 		context.fill();
 
 		// draw turret
 		context.arc(this.x + this.turretOffset.x, this.y + this.turretOffset.y, 5, 0, 2 * Math.PI, false);
-		context.fillStyle = 'red';
+		context.fillStyle = this.colour;
 		context.fill();
 	}
 }
@@ -303,6 +321,7 @@ class Player extends gameCharacter {
 		this.velocity=velocity;
 		this.colour = colour;
 		this.radius = radius;
+		this.health = 1000;
 		this.ammo = 30;
 		this.turretOffset = new Pair(0, -10);
 		this.score = 0;
@@ -350,19 +369,22 @@ class Player extends gameCharacter {
 
 		// calculate offset
 		var angle = Math.atan2(y - this.stage.canvas.height/2, x - this.stage.canvas.width/2);
-		this.turretOffset = new Pair(10 * Math.cos(angle), 10 * Math.sin(angle));
+		this.turretOffset = new Pair(this.radius * Math.cos(angle), this.radius * Math.sin(angle));
 	}
 }
 
 class Enemy extends gameCharacter {
 	
-	constructor(stage, position) {
+	constructor(stage, position, radius, colour, health, shootInterval, speed) {
 		super(stage, position);
 		this.intPosition();
 		this.calculateVelocity();
 		this.turretOffset = this.velocity;
-		this.radius = 10;
-		this.shootInterval = 1000;
+		this.radius = radius;
+		this.health = health;
+		this.colour = colour;
+		this.speed = speed;
+		this.shootInterval = shootInterval;
 	}
 
 	calculateVelocity() {
@@ -375,8 +397,8 @@ class Enemy extends gameCharacter {
 		var x = this.stage.player.position.x;
 		var y = this.stage.player.position.y;
 		var angle = Math.atan2(y - this.position.y, x - this.position.x);
-		this.velocity = new Pair(Math.cos(angle)/2, Math.sin(angle)/2);
-		this.turretOffset = new Pair(10 * Math.cos(angle), 10 * Math.sin(angle));
+		this.velocity = new Pair(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
+		this.turretOffset = new Pair(this.radius * Math.cos(angle), this.radius * Math.sin(angle));
 	}
 
 	step() {
