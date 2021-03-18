@@ -178,17 +178,59 @@ class Stage {
 		return false;
 	}
 
+	/*
 	checkActorAt(x, y, collider) {
 		for (var i = 0; i < this.actors.length; i++) {
 			if (this.actors[i] instanceof gameCharacter && 
-				this.actors[i].x < x + 10 && x - 10 < this.actors[i].x + 10 &&
-				this.actors[i].y < y + 10 && y - 10 < this.actors[i].y + 10 &&
+				this.actors[i].x - 10 < x + 10 && x - 10 < this.actors[i].x + 10 &&
+				this.actors[i].y - 10 < y + 10 && y - 10 < this.actors[i].y + 10 &&
 				this.actors[i] != collider) {
 					return this.actors[i];
 			}
 		}
 		return false;
 	}
+	*/
+	
+	checkActorAt(collider) {
+		
+		var colliderRad = collider.radius;
+		var colliderX = collider.position.x;
+		var colliderY = collider.position.y;
+
+		// loop through actors
+		for (var i = 0; i < this.actors.length; i++) {
+			
+			var collidee = this.actors[i];
+			var collideeRad = collidee.radius;
+			var collideeX = collidee.position.x;
+			var collideeY = collidee.position.y;
+
+			if (collidee instanceof gameCharacter && collidee != collider) {
+					
+				// check for overlapping x
+				if (collideeX - collideeRad < colliderX + colliderRad && colliderX - colliderRad < collideeX + collideeRad) {
+					
+					//check for overlapping y
+					if (collideeY - collideeRad < colliderY + colliderRad && colliderY - colliderRad < collideeY + collideeRad) {
+						return collidee;
+					}
+				}
+			}
+		}
+		/*
+		for (var i = 0; i < this.actors.length; i++) {
+			if (this.actors[i] instanceof gameCharacter && 
+				this.actors[i].x - 10 < colliderX + 10 && colliderX - 10 < this.actors[i].x + 10 &&
+				this.actors[i].y - 10 < colliderY + 10 && colliderY - 10 < this.actors[i].y + 10 &&
+				this.actors[i] != collider) {
+					return this.actors[i];
+			}
+		}*/
+		return false;
+	}
+	
+	
 } // End Class Stage
 
 class Box {
@@ -321,7 +363,7 @@ class Player extends gameCharacter {
 		this.velocity=velocity;
 		this.colour = colour;
 		this.radius = radius;
-		this.health = 1000;
+		this.health = 200;
 		this.ammo = 30;
 		this.turretOffset = new Pair(0, -10);
 		this.score = 0;
@@ -332,7 +374,7 @@ class Player extends gameCharacter {
 		if (!this.canShoot()) {
 			return;
 		}
-		var projectile = new Projectile(stage, new Pair(this.position.x, this.position.y), new Pair(this.position.x + (clientX - 400), this.position.y + (clientY - 400)));
+		var projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(this.position.x + (clientX - 400), this.position.y + (clientY - 400)));
 		this.stage.addActor(projectile);
 		this.ammo--;
 	}
@@ -415,17 +457,19 @@ class Enemy extends gameCharacter {
 	}
 
 	shoot(x, y) {
-		var projectile = new Projectile(stage, new Pair(this.position.x, this.position.y), new Pair(x, y));
+		var projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(x, y));
 		this.stage.addActor(projectile);
 	}
 }
 
 // class for projectiles (bullets)
 class Projectile {
-	constructor(stage, projectileOrigin, clickPosition) {
+	constructor(owner, stage, projectileOrigin, clickPosition) {
 		
 		// assign attributes
+		this.owner = owner;
 		this.projectileOrigin = projectileOrigin;
+		this.radius = 5;
 		this.stage = stage;
 		this.setVelocity(projectileOrigin, clickPosition);
 		this.position = new Pair(projectileOrigin.x + 10 * this.velocity.x, projectileOrigin.y + 10 * this.velocity.y);
@@ -489,9 +533,9 @@ class Projectile {
 			box.takeDamage(1);
 			this.killProjectile();
 		}
-
-		var actor = this.stage.checkActorAt(this.position.x, this.position.y, this) 
-		if (actor != false) {
+		
+		var actor = this.stage.checkActorAt(this);
+		if (actor != false && actor != this.owner) {
 			actor.takeDamage(20);
 			this.killProjectile();
 		}
@@ -499,7 +543,7 @@ class Projectile {
 
 	draw (context) {
 		context.beginPath();
-		context.arc(this.x, this.y, 5, 0, 2 * Math.PI, false);
+		context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
 		context.fillStyle = 'black';
 		context.fill();
 	}
