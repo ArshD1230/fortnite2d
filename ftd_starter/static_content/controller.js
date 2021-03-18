@@ -1,10 +1,11 @@
 var stage=null;
 var view = null;
 var interval=null;
+var difficulty = null;
 var credentials={ "username": "", "password":"" };
 
 function setupGame(){
-	stage=new Stage(document.getElementById('stage'), 2);
+	stage=new Stage(document.getElementById('stage'), difficulty);
 
         // events
 	document.addEventListener('keydown', moveByKey);
@@ -112,11 +113,7 @@ function login(){
                 console.log(jqXHR.status+" "+text_status+JSON.stringify(data));
 
                 hideAll();
-                $("#ui_play").show();
-                $("nav").show();
-
-		setupGame();
-                startGame();
+                $("#ui_difficulty").show();
                 
 
         }).fail(function(err){
@@ -154,7 +151,7 @@ function register(){
         } else if ($("#pro").prop("checked") == true) {
                 values["skill"] = "pro";
         }
-        //console.log("skill: " + values["skill"]);
+
         // check all fields are non empty
         var error = 0;
         if (values["username"] == "") {
@@ -163,12 +160,27 @@ function register(){
         } else { 
                 $("#usernameError").html("");
         }
+        $.ajax({
+                method: "GET",
+                url: "api/user/" + values["username"],
+                async: false
+        }).done(function(data, text_status, jqXHR){
+                if (jqXHR.status == 200) {
+                        $("#usernameError").html("Username is taken")
+                        error = 1;
+                } else {
+                        $("#usernameError").html("");
+                }
+        });
         // check if passwords match
         if (values["password"] != values["password2"]) {
                 $("#passwordError").html("Passwords do not match");
                 error = 1;
         } else if (values["password"] == "" && values["password2"] == "") {
                 $("#passwordError").html("Please enter password");
+                error = 1;
+        } else if (values["password"].length < 8) {
+                $("#passwordError").html("Password must be at least 8 characters long");
                 error = 1;
         } else { 
                 $("#passwordError").html("");
@@ -188,11 +200,10 @@ function register(){
         if (error) {
                 return;
         }
-        // check uniqueness of username
-        // check len of password
+
         $.ajax({
                 method: "POST",
-                url: "/api/register",
+                url: "/api/user",
                 data: JSON.stringify(values),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -207,14 +218,126 @@ function register(){
         });
 }
 
+function loadProfile() {
+        $.ajax({
+                method: "GET",
+                url: "/api/user/" + credentials['username'],
+                //data: JSON.stringify({username: "blah"}),
+                //contentType: "application/json; charset=utf-8",
+                dataType: "json",
+        }).done(function(data, text_status, jqXHR) {
+                //console.log(data['skill']);
+                if (data['skill'] == 'beginner') {
+                        $("#beginnerProfile").prop("checked", true);
+                } else if (data['skill'] == 'intermediate') {
+                        $("#intermediateProfile").prop("checked", true);
+                } else {
+                        $("#proProfile").prop("checked", true);
+                }
+                $("#birthdayProfile").val(data['birthday'].slice(0,10));
+
+        }).fail(function(err){
+                console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON));
+        });
+        $("#newusernameProfile").val(credentials["username"]);
+};
+
+function updateProfile() {
+        values = {
+                "oldUsername": credentials['username'],
+                "newUsername": $('#newusernameProfile').val(),
+                "password": $('#pwdProfile').val(),
+                "password2": $('#pwd2Profile').val(),
+                "skill": "",
+                "birthday": $("#birthdayProfile").val()
+        };
+
+        if ($("#beginnerProfile").prop("checked") == true) {
+                values["skill"] = "beginner";
+        } else if ($("#intermediateProfile").prop("checked") == true) {
+                values["skill"] = "intermediate";
+        } else if ($("#proProfile").prop("checked") == true) {
+                values["skill"] = "pro";
+        }
+
+        var error = 0;
+        if (values["newUsername"] == "") {
+                $("#usernameProfileError").html("Please enter username");
+                error = 1;
+        } else { 
+                $("#usernameProfileError").html("");
+        }
+
+        if (values["newUsername"] != values["oldUsername"]) {
+                $.ajax({
+                        method: "GET",
+                        url: "api/user/" + values["newUsername"],
+                        async: false
+                }).done(function(data, text_status, jqXHR){
+                        if (jqXHR.status == 200) {
+                                $("#usernameProfileError").html("Username is taken")
+                                error = 1;
+                        } else {
+                                $("#usernameProfileError").html("");
+                        }
+                });
+        }
+
+        if (values["password"] != "" || values["password2"] != "") {
+                if (values["password"] != values["password2"]) {
+                        $("#passwordProfileError").html("Passwords do not match");
+                        error = 1;
+                } else if (values["password"].length < 8) {
+                        $("#passwordProfileError").html("Password must be at least 8 characters long");
+                        error = 1;
+                } else { 
+                        $("#passwordProfileError").html("");
+                }
+        } else {
+                $("#passwordProfileError").html("");
+        }
+
+        if (values["birthday"] == "") {
+                $("#birthdayProfileError").html("Please enter birthday");
+                error = 1;
+        } else { 
+                $("#birthdayProfileError").html("");
+        }
+
+        if (values["skill"] == "") {
+                $("#skillProfileError").html("Please choose skill level");
+                error = 1;
+        } else { 
+                $("#skillProfileError").html("");
+        }
+        
+        if (error) {
+                return;
+        }
+
+        $.ajax({
+                method: "PUT",
+                url: "/api/user",
+                data: JSON.stringify(values),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                processData: false
+        }).done(function(data, text_status, jqXHR) {
+                credentials["username"] = values["newUsername"];
+        }).fail(function(err) {
+                console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON));
+        });
+}
+
 function hideAll() {
         $("#ui_login").hide(); 
         $("#ui_register").hide();
         $("#ui_play").hide();
         $("#ui_instructions").hide();
         $("#ui_leaderboard").hide();
-        $("#ui_profile").hide();     
-}
+        $("#ui_profile").hide();
+        $("#ui_difficulty").hide();
+};
 
 $(function(){
         // Setup all events here and display the appropriate UI
@@ -247,6 +370,11 @@ $(function(){
         $("#profileSubmit").on('click', function(){
                 hideAll();
                 $("#ui_profile").show();
+                loadProfile();
+        });
+        
+        $("#update").on('click', function() {
+                updateProfile();
         });
 
         $("#logoutSubmit").on('click', function(){
@@ -255,28 +383,24 @@ $(function(){
                 $("#ui_login").show();
         });
 
+        $("#difficultySubmit").on('click', function(){
+                if ($("#difficulty").val() == 'easy') {
+                        difficulty = 3;
+                } else if ($("#difficulty").val() == 'medium') {
+                        difficulty = 2;
+                } else if ($("#difficulty").val() == 'hard') {
+                        difficulty = 1;
+                }
+                setupGame();
+                startGame();
+                hideAll();
+                $("#ui_play").show();
+                $("nav").show();
+        })
 
-
-
-        // $("#playInstructions").on('click', function(){
-        //         $("#ui_play").hide();
-        //         $("#ui_instructions").show();
-        // })
-        // $("#instructionsBackToGame").on('click', function() {
-        //         $("#ui_play").show();
-        //         $("#ui_instructions").hide();
-        // })
-        // $("#logout").on('click', function() {
-        //         $("#ui_play").hide();
-        //         $("#ui_login").show();
-        // })
 
         hideAll();
         $("nav").hide();
         $("#ui_login").show();
-        
-        // $("#ui_play").hide();
-        // $("#ui_register").hide();
-        // $("#ui_instructions").hide();
 });
 

@@ -6,6 +6,7 @@
 		<script src="jquery-3.5.1.min.js"></script>
 		<script language="javascript" src="model.js" > </script>
 		<script language="javascript" src="controller.js" > </script>
+		<link rel="stylesheet" src="css/style.css">
 		
 		<style>
 			#ui_login { display:block; }
@@ -13,12 +14,59 @@
 			.error {
 				color: red;
 			}
+			h1 {
+				color: white;
+				text-align: center;
+				font-family: 'Courier New', monospace;
+			}
+			header {
+				background-color: #12c9ff;
+				padding: 5px;
+				margin-bottom:10px;
+				text-align: center;
+			}
+			input[type=submit] {
+				display:inline-block;
+				padding:0.35em 1.2em;
+				border:1px solid #12c9ff;
+				margin:3px;
+				border-radius:2px;
+				box-sizing: border-box;
+				text-decoration:none;
+				font-family:'Roboto',sans-serif;
+				font-weight: 500;
+				color:#12c9ff;
+				text-align:center;
+				transition: all 0.2s;
+				background-color:#FFFFFF;
+				font-size: medium;
+			}
+			input[type=submit]:hover{
+				color:#FFFFFF;
+				background-color:#12c9ff;
+				border: 2px solid white;
+			}
+			input[type=text], input[type=password] {
+				padding: 5px;
+				margin: 3px;
+				font-size: medium;
+			}
+			#form{
+				margin: auto; 
+				padding: 10px; 
+				border: 1px solid #12c9ff; 
+				width: 350px;
+				border-radius: 2px;
+			}
+			#ui_profile, #ui_difficulty {
+				text-align: center;
+			}
 		</style>
 		<title>Fortnite</title>
 	</head>
 
 	<header>
-		<h1>Fortnite</h1>
+		<h1>FORTNITE</h1>
 		<nav>
 			<input type="submit" id="playSubmit" value="Play">
 			<input type="submit" id="leaderboardSubmit" value="Leaderboard">
@@ -29,22 +77,24 @@
 	</header>
 
 	<body bgcolor="ffffff">
-		<div id="ui_login">
+		<div id="ui_login" style="text-align: center;">
 			<div>
 				<input type="text" id="username" placeholder="User Name" />
 				<input type="password" id="password" placeholder="Password" />
 				<input type="submit" id="loginSubmit" value="Login"></br>
-				<input type="submit" id="loginRegister" value="Register">
+			</br><input type="submit" id="loginRegister" value="Register">
 			</div>
 		</div>
 		
 		<div id="ui_instructions">
-			Instructions:
-			<ol>
-				<li>Move player with w(up) a(left) s(down) d(right)</li>
-				<li>Left click to shoot</li>
-				<li>Press e to pick up ammo</li>
-			</ol>
+			<div>
+				Instructions:
+				<ul>
+					<li>Move player with w(up) a(left) s(down) d(right)</li>
+					<li>Left click to shoot</li>
+					<li>Press e to pick up ammo</li>
+				</ul>
+			</div>
 		</div>
 		
 		<div id="ui_play">
@@ -58,11 +108,45 @@
 		</div>
 
 		<div id="ui_profile">
+			<p id="usernameProfileError" class="error"></p>
+			<label for="newusernameProfile">Username:</label><br>
+			<input type="text" id="newusernameProfile" name="newusername" required><br>
+			
+			<p id="passwordProfileError" class="error"></p>
+			<label for="pwd">Password:</label><br>
+			<input type="password" id="pwdProfile" name="pwd" minlength="8"><br>
+			<label for="pwd">Re-enter Password:</label><br>
+			<input type="password" id="pwd2Profile" name="pwd2" minlength="8"><br>
 
+			<p id="skillProfileError" class="error"></p>
+			Skill Level: 
+			<input type="radio" id="beginnerProfile" name="skill" value="Beginner">
+			<label for="beginner">Beginner</label>
+			<input type="radio" id="intermediateProfile" name="skill" value="Intermediate">
+			<label for="intermediate">Intermediate</label>
+			<input type="radio" id="proProfile" name="skill" value="Pro">
+			<label for="pro">Pro</label><br>
+
+			<p id="birthdayProfileError" class="error"></p>
+			<label for="birthday">Birthday:</label>
+			<input type="date" id="birthdayProfile" name="birthday" ></br>
+
+			<br><input type="submit" id="update" value="Update">
 		</div>
 		
+		<div id="ui_difficulty">
+			<p id="difficultyError" class="error"></p></br>
+			<label for="difficulty">Choose a difficulty:</label>
+			<select id="difficulty" name="difficulty">
+				<option value="easy">Easy</option>
+				<option value="saab">Medium</option>
+				<option value="fiat">Hard</option>
+			</select>
+		</br><input type="submit" id="difficultySubmit" value="Submit">
+		</div>
+
 		<div id="ui_register">
-			<div id="form" style="margin: auto; padding: 10px; border: 1px solid black; width: 350px">
+			<div id="form">
 
 					<input type="submit" id="registerBack" value="Back to Login"></br>
 				
@@ -88,16 +172,8 @@
 					<p id="birthdayError" class="error"></p>
 					<label for="birthday">Birthday:</label>
 					<input type="date" id="birthday" name="birthday" ></br>
-					
-					I plan to play:
-					<input type="checkbox" id="option1" name="option1" value="Morning">
-					<label for="option1"> Morning </label>
-					<input type="checkbox" id="option2" name="option2" value="Afternoon">
-					<label for="option2"> Afternoon </label>
-					<input type="checkbox" id="option3" name="option3" value="Night">
-					<label for="option3"> Night </label><br>
 
-					<input type="submit" id="registerSubmit" value="Register">
+					</br><input type="submit" id="registerSubmit" value="Register">
 				
 			</div>
 		</div>
