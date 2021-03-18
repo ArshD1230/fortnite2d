@@ -127,6 +127,14 @@ app.put('/api/auth/user', function(req, res) {
 	res.json({});
 });
 
+app.put('/api/auth/score', function(req, res) {
+	var username = req.body.username;
+	var score = req.body.score;
+	DAO.updateScore(username, score);
+	res.status(200);
+	res.json({});
+})
+
 app.delete('/api/auth/user', function(req, res) {
 	var username = req.body.username;
 	console.log("delete" + username);
