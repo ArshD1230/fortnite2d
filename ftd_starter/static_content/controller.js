@@ -12,6 +12,7 @@ function setupGame(difficulty){
         document.getElementById('stage').addEventListener('click', shootByClick)
         document.addEventListener('keydown', pickupAmmoByClick);
         document.getElementById('stage').addEventListener('mousemove', adjustTurret);
+        document.addEventListener('keyup', healByClick);
 }
 
 function gameStep() {
@@ -35,6 +36,12 @@ function pauseGame(){
 
 function adjustTurret(event) {
         stage.player.adjustTurret(event.clientX, event.clientY);
+}
+
+function healByClick(event) {
+        if (event.key == 'g') {
+                stage.player.useHealthPack()
+        }
 }
 
 function moveByKey(event){
@@ -392,7 +399,6 @@ $(function(){
         });
 
         $("#difficultySubmit").on('click', function(){
-                var difficulty;
                 if ($("#difficulty").val() == 'easy') {
                         difficulty = 0;
                 } else if ($("#difficulty").val() == 'medium') {

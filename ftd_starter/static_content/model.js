@@ -10,14 +10,18 @@ class Stage {
 		this.staticActors=[]; // all actors on this stage that dont move (boxes, map)
 		this.player=null; // a special actor, the player
 		this.difficulty = difficulty;	// lower number = more difficult
+
+		// spawn rates and timers
 		this.enemySpawnRate = 2000 - (this.difficulty * 750);
 		this.enemySpawnTimer = 0;
-		this.boxSpawnRate = 10000 - (this.difficulty * 250);
+		this.boxSpawnRate = 8000 - (this.difficulty * 1000);
 		this.boxSpawnTimer = 0;
 		this.assassinSpawnRate = 9000 - (this.difficulty * 1000);
 		this.assassinSpawnTimer = 0;
 		this.tankSpawnRate = 16000 - (this.difficulty * 1000);
 		this.tankSpawnTimer = 0;
+		this.healthPackSpawnRate = 16000 - (this.difficulty * 3000);
+		this.healthPackSpawnTimer = 0;
 		this.boxMax = 10;
 		this.boxCount = 10;
 	
@@ -52,7 +56,16 @@ class Stage {
 		// Add in some obstacles
 		var total=10;
 		while(total>0){
-			var b = new Box(this, new Pair(rand(this.width), rand(this.height)), 100);
+			var b = new AmmoBox(this, new Pair(rand(this.width), rand(this.height)), 100);
+			if (b.coversPlayer()) {continue;}
+			this.addStaticActor(b);
+			total--;
+		}
+
+		// Add in some health packs
+		var total=3;
+		while(total>0){
+			var b = new HealthPack(this, new Pair(rand(this.width), rand(this.height)), 15);
 			if (b.coversPlayer()) {continue;}
 			this.addStaticActor(b);
 			total--;
@@ -97,10 +110,17 @@ class Stage {
 
 		// add box if the spawn interval is up
 		if (this.boxSpawnTimer + 1 == this.boxSpawnRate && this.boxCount <= this.boxMax) {
-			var newBox = new Box(this, new Pair(rand(this.width), rand(this.height)), 100);
+			var newBox = new AmmoBox(this, new Pair(rand(this.width), rand(this.height)), 100);
 			this.addStaticActor(newBox);
 		}
 		this.boxSpawnTimer = (this.boxSpawnTimer + 1) % this.boxSpawnRate;
+
+		// add healthpack if the spawn interval is up
+		if (this.healthPackSpawnTimer + 1 == this.healthPackSpawnRate) {
+			var newhealthPack = new HealthPack(this, new Pair(rand(this.width), rand(this.height)), 15);
+			this.addStaticActor(newhealthPack);
+		}
+		this.healthPackSpawnTimer = (this.healthPackSpawnTimer + 1) % this.healthPackSpawnRate;
 
 		// add enemy if the spawn interval is up
 		if (this.enemySpawnTimer + 1 == this.enemySpawnRate) {
@@ -153,6 +173,7 @@ class Stage {
 		context.fillText("AMMO: " + this.player.ammo, this.player.x - 375, this.player.y + 375);
 		context.fillText("HEALTH: " + this.player.health, this.player.x - 100, this.player.y + 375);
 		context.fillText("SCORE: " + this.player.score, this.player.x + 225, this.player.y - 350);
+		context.fillText("HEALS: " + this.player.healthPacks, this.player.x + 225, this.player.y + 375);
 
 		context.restore();
 	}
@@ -168,11 +189,17 @@ class Stage {
 	}
 
 	// check if box covers the given x, y, if it does, return that box object, false otherwise
-	checkBoxAt(x, y) {
+	checkBoxAt(x, y, collider) {
 		for (var i = 0; i < this.staticActors.length; i++) {
-			if (this.staticActors[i].x < x + 10 && x - 10 < this.staticActors[i].x + 100 &&
-				this.staticActors[i].y < y + 10 && y - 10 < this.staticActors[i].y + 100) {
-					return this.staticActors[i];
+			if (this.staticActors[i].x < x + 10 && x - 10 < this.staticActors[i].x + this.staticActors[i].size &&
+				this.staticActors[i].y < y + 10 && y - 10 < this.staticActors[i].y + this.staticActors[i].size) {
+					if (this.staticActors[i] instanceof HealthPack && collider == this.player) {
+						this.player.pickupHealthPack();
+						this.staticActors[i].killActor();
+					}
+					else {
+						return this.staticActors[i];
+					}
 			}
 		}
 		return false;
@@ -211,35 +238,12 @@ class Stage {
 } // End Class Stage
 
 class Box {
+	
 	constructor(stage, position, size){
 		this.stage = stage;
 		this.x=position.x;
 		this.y=position.y;
-		this.colour = 'rgba('+randint(255)+','+randint(255)+','+randint(255)+')';
 		this.size = size;
-		this.health = 6;
-	}
-
-	coversPlayer() {
-		var playerX = this.stage.player.position.x;
-		var playerY = this.stage.player.position.y;
-
-		if (this.x <= playerX && playerX <= this.x + this.size && 
-			this.y <= playerY && playerY <= this.y + this.size) {
-			return true;
-		}
-		return false;
-	}
-
-	takeDamage(damage) {
-		this.health -= damage;
-		this.checkIfDead();
-	}
-
-	checkIfDead() {
-		if (this.health <= 0) {
-			this.killActor();
-		}
 	}
 
 	killActor() {
@@ -253,6 +257,45 @@ class Box {
 		context.strokeStyle = 'black';
 		context.lineWidth = 1;
 		context.strokeRect(this.x, this.y, this.size, this.size);
+	}
+
+	takeDamage(damage) {
+		this.health -= damage;
+		this.checkIfDead();
+	}
+
+	checkIfDead() {
+		if (this.health <= 0) {
+			this.killActor();
+		}
+	}
+
+	coversPlayer() {
+		var playerX = this.stage.player.position.x;
+		var playerY = this.stage.player.position.y;
+
+		if (this.x <= playerX && playerX <= this.x + this.size && 
+			this.y <= playerY && playerY <= this.y + this.size) {
+			return true;
+		}
+		return false;
+	}
+}
+
+class AmmoBox extends Box {
+	constructor(stage, position, size){
+		super(stage, position, size);
+		this.colour = 'rgba('+randint(255)+','+randint(255)+','+randint(255)+')';
+		this.health = 6;
+	}
+}
+
+class HealthPack extends Box {
+	
+	constructor(stage, position, size) {
+		super(stage, position, size);
+		this.health = 500;
+		this.colour = 'Aqua';
 	}
 }
 
@@ -292,8 +335,7 @@ class gameCharacter {
 	}
 
 	step(){
-		if (this.stage.checkBoxAt(this.position.x + this.velocity.x, this.position.y + this.velocity.y) == false /*&&
-			this.stage.checkActorAt(this.position.x + this.velocity.x, this.position.y + this.velocity.y, this) == false*/) {
+		if (this.stage.checkBoxAt(this.position.x + this.velocity.x, this.position.y + this.velocity.y, this) == false) {
 			this.position.x=this.position.x+this.velocity.x;
 			this.position.y=this.position.y+this.velocity.y;
 		}
@@ -342,8 +384,27 @@ class Player extends gameCharacter {
 		this.radius = radius;
 		this.health = 200;
 		this.ammo = 30;
+		this.healthPacks = 0;
 		this.turretOffset = new Pair(0, -10);
 		this.score = 0;
+	}
+
+	pickupHealthPack() {
+		this.healthPacks++;
+	}
+
+	useHealthPack() {
+
+		// use health pack and heal
+		if (this.healthPacks > 0 && this.health < 200) {
+			this.healthPacks--;
+			this.health += 40;
+		}
+
+		// check health overflow
+		if (this.health > 200) {
+			this.health = 200;
+		}
 	}
 
 	shoot(clientX, clientY) {
@@ -362,7 +423,7 @@ class Player extends gameCharacter {
 	}	
 
 	pickupAmmo() {
-		if (this.stage.checkBoxAt(this.position.x + this.velocity.x, this.position.y + this.velocity.y)) {
+		if (this.stage.checkBoxAt(this.position.x + this.velocity.x, this.position.y + this.velocity.y, this)) {
 			this.ammo++;
 		}
 	}
@@ -433,6 +494,7 @@ class Enemy extends gameCharacter {
 		this.shootInterval = (this.shootInterval + 1) % 1000;
 	}
 
+	// create new bullet and shoot
 	shoot(x, y) {
 		var projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(x, y));
 		this.stage.addActor(projectile);
@@ -505,7 +567,7 @@ class Projectile {
 
 	checkProjectileHit() {
 		
-		var box = this.stage.checkBoxAt(this.position.x, this.position.y);
+		var box = this.stage.checkBoxAt(this.position.x, this.position.y, this);
 		if (box != false) {
 			box.takeDamage(1);
 			this.killProjectile();
