@@ -405,6 +405,7 @@ $(function(){
         })
 
         $("#playRestart").on('click', function() {
+                pauseGame();
                 setupGame();
                 startGame();
         })

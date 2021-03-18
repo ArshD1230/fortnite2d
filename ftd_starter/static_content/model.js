@@ -469,10 +469,11 @@ class Projectile {
 		// assign attributes
 		this.owner = owner;
 		this.projectileOrigin = projectileOrigin;
+		this.position = new Pair(projectileOrigin.x, projectileOrigin.y);
 		this.radius = 5;
 		this.stage = stage;
 		this.setVelocity(projectileOrigin, clickPosition);
-		this.position = new Pair(projectileOrigin.x + 10 * this.velocity.x, projectileOrigin.y + 10 * this.velocity.y);
+		//this.position = new Pair(projectileOrigin.x + 10 * this.velocity.x, projectileOrigin.y + 10 * this.velocity.y);
 		this.ttl = 1000; // time to live in number of steps
 	}
 
