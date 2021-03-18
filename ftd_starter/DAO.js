@@ -57,7 +57,24 @@ module.exports = {
         let sql = 'DELETE from ftduser where username=$1';
         pool.query(sql, [username], (err, pgRes) => {
             if (err) {
-                console.log(error);
+                console.log(stack);
+            }
+        })
+    },
+    updateScore: function(username, score) {
+        let sql = 'SELECT highscore FROM ftduser where username=$1';
+        pool.query(sql, [username], (err, pgRes) => {
+            if (err) {
+                console.log(err);
+            } else {
+                if (pgRes.rows[0]['highscore'] < score) {
+                    sql = 'UPDATE ftduser SET highscore=$1 where username=$2';
+                    pool.query(sql, [score, username], (err, pgRes) => {
+                        if (err) {
+                            console.log(stack);
+                        }
+                    })
+                }
             }
         })
     }

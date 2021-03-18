@@ -361,6 +361,22 @@ function deleteProfile() {
         $("#ui_login").show();
 }
 
+function updateScore(score) {
+        $.ajax({
+                method: "PUT",
+                url: "/api/auth/score",
+                headers: { "Authorization": "Basic " + btoa(credentials.username + ":" + credentials.password) },
+                data: JSON.stringify({username: credentials["username"], score: (difficulty+1)*score}),
+                contentType: "application/json; charset=utf-8",
+                processData: false
+        }).done(function(data, text_status, jqXHR) {
+                console.log("high score updated");
+        }).fail(function(err) {
+                console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON))
+        });
+}
+
+
 function hideAll() {
         $("#ui_login").hide(); 
         $("#ui_register").hide();

@@ -432,6 +432,7 @@ class Player extends gameCharacter {
 		if (this.health <= 0) {
 			this.killActor();
 			this.stage.gameOver = true;
+			updateScore(this.score);
 		}
 	}
 
