@@ -63,17 +63,6 @@ app.get('/api/user/:username', function(req, res) {
 	});
 });
 
-app.put('/api/user', function(req, res) {
-	var newUsername = req.body.newUsername;
-	var oldUsername = req.body.oldUsername;
-	var password = req.body.password;
-	var birthday = req.body.birthday;
-	var skill = req.body.skill;
-
-	DAO.updateUser(newUsername, oldUsername, password, birthday, skill);
-	res.status(200);
-	res.json({});
-})
 
 
 /** 
@@ -125,6 +114,18 @@ app.post('/api/auth/test', function (req, res) {
 	res.status(200); 
 	res.json({"message":"got to /api/auth/test"}); 
 });
+
+app.put('/api/auth/user', function(req, res) {
+	var newUsername = req.body.newUsername;
+	var oldUsername = req.body.oldUsername;
+	var password = req.body.password;
+	var birthday = req.body.birthday;
+	var skill = req.body.skill;
+
+	DAO.updateUser(newUsername, oldUsername, password, birthday, skill);
+	res.status(200);
+	res.json({});
+})
 
 app.use(express.static(path.join(__dirname, 'public')));
 
