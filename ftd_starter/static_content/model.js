@@ -2,26 +2,34 @@ function randint(n){ return Math.round(Math.random()*n); }
 function rand(n){ return Math.random()*n; }
 
 class Stage {
-	constructor(canvas){
+	constructor(canvas, difficulty){
+
+		this.gameOver = false;
 		this.canvas = canvas;
-	
 		this.actors=[]; // all actors on this stage that do move (monsters, player)
 		this.staticActors=[]; // all actors on this stage that dont move (boxes, map)
 		this.player=null; // a special actor, the player
+		this.difficulty = difficulty;	// lower number = more difficult
+		this.enemySpawnRate = 500 + (this.difficulty * 500);
+		this.enemySpawnTimer = 0;
+		this.boxSpawnRate = 5000
+		this.boxSpawnTimer = 0;
+		this.boxMax = 10;
+		this.boxCount = 10;
 	
 		// the map width and height
 		this.width=canvas.width + 500;
 		this.height=canvas.height + 500;
 	
+		// make map border
+		var mapBorder = new Box(this, new Pair(-400, -400), 2 * this.width);
+		mapBorder.colour = 'white';
+		this.mapBorder = mapBorder;
+
 		// make map
-		var x = 0;
-		var y = 0;
-		var velocity = new Pair(0,0);
-		var radius = this.width;
-		var colour = 'green';
-		var position = new Pair(x, y);
-		var b = new Box(this, position, velocity, colour, radius);
-		this.addStaticActor(b);
+		var map = new Box(this, new Pair(0, 0), this.width);
+		map.colour = 'green';
+		this.map = map;
 
 		// Add the player to the center of the stage
 		var velocity = new Pair(0,0);
@@ -30,23 +38,20 @@ class Stage {
 		var position = new Pair(Math.floor(canvas.width/2), Math.floor(canvas.height/2));
 		this.addPlayer(new Player(this, position, velocity, colour, radius));
 
-		// Add in some Balls
+		// Add some enemies
+		for (var i = 0; i < 3; i++) {
+			var enemyPosition = new Pair(rand(this.width), rand(this.height));
+			var enemy = new Enemy(this, enemyPosition);
+			this.addActor(enemy);
+		}
+
+		// Add in some obstacles
 		var total=10;
 		while(total>0){
-			var x=Math.floor((Math.random()*(this.width))); 
-			var y=Math.floor((Math.random()*(this.height))); 
-			if(this.getActor(x,y)===null){
-				var velocity = new Pair(rand(20), rand(20));
-				var red=randint(255), green=randint(255), blue=randint(255);
-				var radius = 100;
-				var alpha = 1;
-				var colour= 'rgba('+red+','+green+','+blue+','+alpha+')';
-				var position = new Pair(x,y);
-				var b = new Box(this, position, velocity, colour, radius);
-				if (b.coversPlayer()) {continue;}
-				this.addStaticActor(b);
-				total--;
-			}
+			var b = new Box(this, new Pair(rand(this.width), rand(this.height)), 100);
+			if (b.coversPlayer()) {continue;}
+			this.addStaticActor(b);
+			total--;
 		}
 	}
 
@@ -85,6 +90,22 @@ class Stage {
 	// Take one step in the animation of the game.  Do this by asking each of the actors to take a single step. 
 	// NOTE: Careful if an actor died, this may break!
 	step(){
+
+		// add box if the spawn interval is up
+		if (this.boxSpawnTimer + 1 == this.boxSpawnRate && this.boxCount <= this.boxMax) {
+			var newBox = new Box(this, new Pair(rand(this.width), rand(this.height)), 100);
+			this.addStaticActor(newBox);
+		}
+		this.boxSpawnTimer = (this.boxSpawnTimer + 1) % this.boxSpawnRate;
+
+		// add enemy if the spawn interval is up
+		if (this.enemySpawnTimer + 1 == this.enemySpawnRate) {
+			var newEnemy = new Enemy(this, new Pair(rand(this.width), rand(this.height)));
+			this.addActor(newEnemy);
+		}
+		this.enemySpawnTimer = (this.enemySpawnTimer + 1) % this.enemySpawnRate;
+
+		// call step on all the actors
 		for(var i=0;i<this.actors.length;i++){
 			this.actors[i].step();
 		}
@@ -95,6 +116,10 @@ class Stage {
 		context.save();
 		context.translate((-1 * (this.player.position.x)) + Math.floor(this.canvas.width / 2), (-1 * this.player.position.y) + Math.floor(this.canvas.height / 2));
 		
+		// draw map
+		this.mapBorder.draw(context);
+		this.map.draw(context);
+
 		// draw static actors
 		for (var i = 0; i < this.staticActors.length; i++) {
 			this.staticActors[i].draw(context);
@@ -127,39 +152,34 @@ class Stage {
 	// check if box covers the given x, y, if it does, return that box object, false otherwise
 	checkBoxAt(x, y) {
 		for (var i = 1; i < this.staticActors.length; i++) {
-			if (this.staticActors[i].x < x && x < this.staticActors[i].x + 100 &&
-				this.staticActors[i].y < y && y< this.staticActors[i].y + 100) {
+			if (this.staticActors[i].x < x + 10 && x - 10 < this.staticActors[i].x + 100 &&
+				this.staticActors[i].y < y + 10 && y - 10 < this.staticActors[i].y + 100) {
 					return this.staticActors[i];
+			}
+		}
+		return false;
+	}
+
+	checkActorAt(x, y, collider) {
+		for (var i = 0; i < this.actors.length; i++) {
+			if (this.actors[i] instanceof gameCharacter && 
+				this.actors[i].x < x + 10 && x - 10 < this.actors[i].x + 10 &&
+				this.actors[i].y < y + 10 && y - 10 < this.actors[i].y + 10 &&
+				this.actors[i] != collider) {
+					return this.actors[i];
 			}
 		}
 		return false;
 	}
 } // End Class Stage
 
-class Pair {
-	constructor(x,y){
-		this.x=x; this.y=y;
-	}
-
-	toString(){
-		return "("+this.x+","+this.y+")";
-	}
-
-	normalize(){
-		var magnitude=Math.sqrt(this.x*this.x+this.y*this.y);
-		this.x=this.x/magnitude;
-		this.y=this.y/magnitude;
-	}
-}
-
 class Box {
-	constructor(stage, position, velocity, colour, radius){
+	constructor(stage, position, size){
 		this.stage = stage;
 		this.x=position.x;
 		this.y=position.y;
-		this.velocity=velocity;
-		this.colour = colour;
-		this.radius = radius;
+		this.colour = 'rgba('+randint(255)+','+randint(255)+','+randint(255)+')';
+		this.size = size;
 		this.health = 6;
 	}
 
@@ -167,49 +187,72 @@ class Box {
 		var playerX = this.stage.player.position.x;
 		var playerY = this.stage.player.position.y;
 
-		if (this.x <= playerX && playerX <= this.x + this.radius && 
-			this.y <= playerY && playerY <= this.y + this.radius) {
+		if (this.x <= playerX && playerX <= this.x + this.size && 
+			this.y <= playerY && playerY <= this.y + this.size) {
 			return true;
 		}
 		return false;
 	}
 
-	takeDamage() {
-		this.health--;
-		if (this.isDestroyed()) {
-			this.stage.removeStaticActor(this);
+	takeDamage(damage) {
+		this.health -= damage;
+		this.checkIfDead();
+	}
+
+	checkIfDead() {
+		if (this.health <= 0) {
+			this.killActor();
 		}
 	}
 
-	isDestroyed() {
-		if (this.health == 0) {return true;}
-		return false;
+	killActor() {
+		this.stage.removeStaticActor(this);
 	}
 	
 	draw(context){
 		context.fillStyle = this.colour;
-   		context.fillRect(this.x, this.y, this.radius,this.radius);
+   		context.fillRect(this.x, this.y, this.size, this.size);
 		  
 		context.strokeStyle = 'black';
 		context.lineWidth = 1;
-		context.strokeRect(this.x, this.y, this.radius,this.radius);
+		context.strokeRect(this.x, this.y, this.size, this.size);
 	}
-
 }
 
-class Player {
-
-	constructor(stage, position, velocity, colour, radius){
+class gameCharacter {
+	constructor(stage, position) {
 		this.stage = stage;
-		this.position=position;
-		this.intPosition(); // this.x, this.y are int version of this.position
-		this.velocity=velocity;
-		this.colour = colour;
-		this.radius = radius;
-		this.ammo = 30;
-		this.turretOffset = new Pair(0, -10);
 		this.health = 100;
-		this.score = 0;
+		this.position = position;
+	}
+
+	intPosition(){
+		this.x = Math.round(this.position.x);
+		this.y = Math.round(this.position.y);
+	}
+
+	takeDamage(damage) {
+		this.health -= damage;
+		this.checkIfDead();
+	}
+
+	checkIfDead() {
+		if (this.health <= 0) {
+			this.killActor();
+		}
+	}
+
+	killActor() {
+		this.stage.removeActor(this);
+		if (this != this.stage.player) {
+			this.stage.player.score++;
+		}
+	}
+
+	headTo(position){
+		this.velocity.x=(position.x-this.position.x);
+		this.velocity.y=(position.y-this.position.y);
+		this.velocity.normalize();
 	}
 
 	step(){
@@ -237,15 +280,32 @@ class Player {
 		this.intPosition();
 	}
 
-	headTo(position){
-		this.velocity.x=(position.x-this.position.x);
-		this.velocity.y=(position.y-this.position.y);
-		this.velocity.normalize();
-	}
+	draw(context){
+		
+		// draw player
+		context.beginPath(); 
+		context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false); 
+		context.fillStyle = 'red';
+		context.fill();
 
-	intPosition(){
-		this.x = Math.round(this.position.x);
-		this.y = Math.round(this.position.y);
+		// draw turret
+		context.arc(this.x + this.turretOffset.x, this.y + this.turretOffset.y, 5, 0, 2 * Math.PI, false);
+		context.fillStyle = 'red';
+		context.fill();
+	}
+}
+
+class Player extends gameCharacter {
+
+	constructor(stage, position, velocity, colour, radius){
+		super(stage, position);
+		this.intPosition(); // this.x, this.y are int version of this.position
+		this.velocity=velocity;
+		this.colour = colour;
+		this.radius = radius;
+		this.ammo = 30;
+		this.turretOffset = new Pair(0, -10);
+		this.score = 0;
 	}
 
 	shoot(clientX, clientY) {
@@ -253,10 +313,9 @@ class Player {
 		if (!this.canShoot()) {
 			return;
 		}
-		var projectile = new Projectile(stage, new Pair(clientX, clientY));
+		var projectile = new Projectile(stage, new Pair(this.position.x, this.position.y), new Pair(this.position.x + (clientX - 400), this.position.y + (clientY - 400)));
 		this.stage.addActor(projectile);
 		this.ammo--;
-
 	}
 
 	canShoot() {
@@ -267,6 +326,13 @@ class Player {
 	pickupAmmo() {
 		if (this.stage.checkBoxAt(this.position.x + this.velocity.x, this.position.y + this.velocity.y)) {
 			this.ammo++;
+		}
+	}
+
+	checkIfDead() {
+		if (this.health <= 0) {
+			this.killActor();
+			this.stage.gameOver = true;
 		}
 	}
 
@@ -286,61 +352,74 @@ class Player {
 		var angle = Math.atan2(y - this.stage.canvas.height/2, x - this.stage.canvas.width/2);
 		this.turretOffset = new Pair(10 * Math.cos(angle), 10 * Math.sin(angle));
 	}
+}
 
-	draw(context){
-		
-		//console.log(self.position.x, self.position.);
+class Enemy extends gameCharacter {
+	
+	constructor(stage, position) {
+		super(stage, position);
+		this.intPosition();
+		this.calculateVelocity();
+		this.turretOffset = this.velocity;
+		this.radius = 10;
+		this.shootInterval = 1000;
+	}
 
-		// draw player
-		context.beginPath(); 
-		context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false); 
-		context.fillStyle = 'red';
-		context.fill();
+	calculateVelocity() {
 
-		// draw turret
-		context.arc(this.x + this.turretOffset.x, this.y + this.turretOffset.y, 5, 0, 2 * Math.PI, false);
-		context.fillStyle = 'red';
-		context.fill();
+		if (this.position.x == this.stage.player.position.x && this.position.y == this.stage.player.position.y) {
+			this.velocity = new Pair(0,0);
+			return
+		}
+
+		var x = this.stage.player.position.x;
+		var y = this.stage.player.position.y;
+		var angle = Math.atan2(y - this.position.y, x - this.position.x);
+		this.velocity = new Pair(Math.cos(angle)/2, Math.sin(angle)/2);
+		this.turretOffset = new Pair(10 * Math.cos(angle), 10 * Math.sin(angle));
+	}
+
+	step() {
+		this.calculateVelocity();
+		this.checkCanShoot();
+		super.step();
+	}
+
+	checkCanShoot() {
+		if (this.shootInterval == 0) {
+			this.shoot(this.stage.player.position.x, this.stage.player.position.y);
+		}
+		this.shootInterval = (this.shootInterval + 1) % 1000;
+	}
+
+	shoot(x, y) {
+		var projectile = new Projectile(stage, new Pair(this.position.x, this.position.y), new Pair(x, y));
+		this.stage.addActor(projectile);
 	}
 }
 
 // class for projectiles (bullets)
 class Projectile {
-	constructor(stage, clickPosition) {
-		
-		// convert coordinates of user's click to coordinates that correspond to the canvas
-		var x = clickPosition.x - stage.canvas.getBoundingClientRect().left;
-		var y = clickPosition.y - stage.canvas.getBoundingClientRect().top;
+	constructor(stage, projectileOrigin, clickPosition) {
 		
 		// assign attributes
+		this.projectileOrigin = projectileOrigin;
 		this.stage = stage;
-		this.position = new Pair(stage.player.position.x, stage.player.position.y);
-		this.setVelocity(new Pair(x, y));
+		this.setVelocity(projectileOrigin, clickPosition);
+		this.position = new Pair(projectileOrigin.x + 10 * this.velocity.x, projectileOrigin.y + 10 * this.velocity.y);
 		this.ttl = 1000; // time to live in number of steps
 	}
 
 	// calculate velocity of this projectile using the coordinates of the user's click
-	setVelocity (clickPosition) {
-		var angle = Math.atan2(clickPosition.y - this.stage.canvas.height/2, clickPosition.x - this.stage.canvas.width/2);
+	setVelocity (projectileOrigin, clickPosition) {
+		var angle = Math.atan2(clickPosition.y - projectileOrigin.y, clickPosition.x - projectileOrigin.x);
 		this.velocity = new Pair(Math.cos(angle)*3, Math.sin(angle)*3);
 	}
 
 	step(){
-		
-		this.decrementTTL();
-
-		var newX = this.position.x+this.velocity.x;
-		var newY = this.position.y+this.velocity.y;
-		var box = this.stage.checkBoxAt(newX, newY);
-
-		if (box == false) {
-			this.position.x=this.position.x+this.velocity.x;
-			this.position.y=this.position.y+this.velocity.y;
-		}
-		else {
-			box.takeDamage();
-			this.killProjectile();
-		}
+	
+		this.position.x=this.position.x+this.velocity.x;
+		this.position.y=this.position.y+this.velocity.y;
 
 		// bounce off the walls
 		if(this.position.x<0){
@@ -359,7 +438,10 @@ class Projectile {
 			this.position.y=this.stage.height;
 			this.velocity.y=-Math.abs(this.velocity.y);
 		}
+		
+		this.decrementTTL();
 		this.intPosition();
+		this.checkProjectileHit();
 	}
 
 	decrementTTL() {
@@ -378,6 +460,21 @@ class Projectile {
 		this.y = Math.round(this.position.y);
 	}
 
+	checkProjectileHit() {
+		
+		var box = this.stage.checkBoxAt(this.position.x, this.position.y);
+		if (box != false) {
+			box.takeDamage(1);
+			this.killProjectile();
+		}
+
+		var actor = this.stage.checkActorAt(this.position.x, this.position.y, this) 
+		if (actor != false) {
+			actor.takeDamage(20);
+			this.killProjectile();
+		}
+	}
+
 	draw (context) {
 		context.beginPath();
 		context.arc(this.x, this.y, 5, 0, 2 * Math.PI, false);
@@ -386,3 +483,18 @@ class Projectile {
 	}
 }
 
+class Pair {
+	constructor(x,y){
+		this.x=x; this.y=y;
+	}
+
+	toString(){
+		return "("+this.x+","+this.y+")";
+	}
+
+	normalize(){
+		var magnitude=Math.sqrt(this.x*this.x+this.y*this.y);
+		this.x=this.x/magnitude;
+		this.y=this.y/magnitude;
+	}
+}

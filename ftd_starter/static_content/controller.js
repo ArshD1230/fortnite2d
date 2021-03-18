@@ -3,16 +3,10 @@ var view = null;
 var interval=null;
 var credentials={ "username": "", "password":"" };
 
-// function initView(){
-//         if (!view){
-//                 view = 'login';
-//         }
-// }
-
 function setupGame(){
-	stage=new Stage(document.getElementById('stage'));
+	stage=new Stage(document.getElementById('stage'), 0);
 
-	// https://javascript.info/keyboard-events
+        // events
 	document.addEventListener('keydown', moveByKey);
         document.addEventListener('keyup', stopByKey);
         document.getElementById('stage').addEventListener('click', shootByClick)
@@ -20,8 +14,18 @@ function setupGame(){
         document.getElementById('stage').addEventListener('mousemove', adjustTurret);
 }
 
+function gameStep() {
+        if (!stage.gameOver) {
+                stage.step(); 
+                stage.draw(); 
+        }
+        else {
+                clearInterval(interval);
+        }
+}
+
 function startGame(){
-	interval=setInterval(function(){ stage.step(); stage.draw(); }, 1);
+	interval=setInterval(gameStep, 1);
 }
 
 function pauseGame(){
@@ -81,7 +85,7 @@ function stopByKey (event) {
 }
 
 function shootByClick(event) {
-        stage.player.shoot(event.clientX, event.clientY);
+        stage.player.shoot(event.clientX - stage.canvas.getBoundingClientRect().left, event.clientY - stage.canvas.getBoundingClientRect().top);
 }
 
 function pickupAmmoByClick(event) {
