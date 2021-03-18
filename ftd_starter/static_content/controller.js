@@ -99,7 +99,7 @@ function login(){
 	credentials =  { 
 		"username": $("#username").val(), 
 		"password": $("#password").val() 
-	};
+        };
 
         $.ajax({
                 method: "POST",
@@ -114,10 +114,16 @@ function login(){
 
                 hideAll();
                 $("#ui_difficulty").show();
+                $("#loginError").html("");
+                $("#username").css("border", "1px solid grey");
+                $("#password").css("border", "1px solid grey");
                 
 
         }).fail(function(err){
                 console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON));
+                $("#loginError").html("Invalid login");
+                $("#username").css("border", "1px solid red");
+                $("#password").css("border", "1px solid red");
         });
 }
 
