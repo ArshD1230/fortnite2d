@@ -111,9 +111,9 @@ function login(){
         }).done(function(data, text_status, jqXHR){
                 console.log(jqXHR.status+" "+text_status+JSON.stringify(data));
 
-        	$("#ui_login").hide();
+                hideAll();
                 $("#ui_play").show();
-                $("#ui_register").hide();
+                $("nav").show();
 
 		setupGame();
                 startGame();
@@ -207,33 +207,76 @@ function register(){
         });
 }
 
+function hideAll() {
+        $("#ui_login").hide(); 
+        $("#ui_register").hide();
+        $("#ui_play").hide();
+        $("#ui_instructions").hide();
+        $("#ui_leaderboard").hide();
+        $("#ui_profile").hide();     
+}
+
 $(function(){
         // Setup all events here and display the appropriate UI
         $("#loginSubmit").on('click',function(){ login(); });
         $("#loginRegister").on('click', function() { 
-                $("#ui_login").hide(); 
+                hideAll(); 
                 $("#ui_register").show();
         });
         $("#registerSubmit").on('click', function(){ register(); })
         $("#registerBack").on('click', function(){
+                hideAll();
                 $("#ui_login").show();
-                $("#ui_register").hide();
-        })
-        $("#playInstructions").on('click', function(){
-                $("#ui_play").hide();
-                $("#ui_instructions").show();
-        })
-        $("#instructionsBackToGame").on('click', function() {
+        });
+
+        $("#playSubmit").on('click', function(){
+                hideAll();
                 $("#ui_play").show();
-                $("#ui_instructions").hide();
-        })
-        $("#logout").on('click', function() {
-                $("#ui_play").hide();
+        });
+
+        $("#leaderboardSubmit").on('click', function(){
+                hideAll();
+                $("#ui_leaderboard").show();
+        });
+
+        $("#instructionsSubmit").on('click', function(){
+                hideAll();
+                $("#ui_instructions").show();
+        });
+
+        $("#profileSubmit").on('click', function(){
+                hideAll();
+                $("#ui_profile").show();
+        });
+
+        $("#logoutSubmit").on('click', function(){
+                hideAll();
+                $("nav").hide();
                 $("#ui_login").show();
-        })
+        });
+
+
+
+
+        // $("#playInstructions").on('click', function(){
+        //         $("#ui_play").hide();
+        //         $("#ui_instructions").show();
+        // })
+        // $("#instructionsBackToGame").on('click', function() {
+        //         $("#ui_play").show();
+        //         $("#ui_instructions").hide();
+        // })
+        // $("#logout").on('click', function() {
+        //         $("#ui_play").hide();
+        //         $("#ui_login").show();
+        // })
+
+        hideAll();
+        $("nav").hide();
         $("#ui_login").show();
-        $("#ui_play").hide();
-        $("#ui_register").hide();
-        $("#ui_instructions").hide();
+        
+        // $("#ui_play").hide();
+        // $("#ui_register").hide();
+        // $("#ui_instructions").hide();
 });
 
