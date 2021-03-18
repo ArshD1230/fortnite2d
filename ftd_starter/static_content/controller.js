@@ -398,6 +398,11 @@ $(function(){
                 $("nav").show();
         })
 
+        $("#playRestart").on('click', function() {
+                setupGame();
+                startGame();
+        })
+
 
         hideAll();
         $("nav").hide();
