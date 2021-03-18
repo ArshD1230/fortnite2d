@@ -63,6 +63,20 @@
 			#ui_profile, #ui_difficulty, #ui_play {
 				text-align: center;
 			}
+			#difficulty {
+				background-color: white;
+				color: #12c9ff;
+				font-size: medium;
+				padding: 5px;
+				width: 100px;
+			}
+			#difficulty select {
+  				display: none; /*hide original SELECT element: */
+			}
+			.select-items {
+				padding: 5px;
+			}
+
 		</style>
 		<title>Fortnite</title>
 	</head>
@@ -136,6 +150,7 @@
 			<input type="date" id="birthdayProfile" name="birthday" ></br>
 
 			<br><input type="submit" id="update" value="Update">
+			<p id="profileSuccess"></p>
 		</div>
 		
 		<div id="ui_difficulty">
@@ -145,8 +160,8 @@
 				<option value="easy">Easy</option>
 				<option value="saab">Medium</option>
 				<option value="fiat">Hard</option>
-			</select>
-		</br><input type="submit" id="difficultySubmit" value="Submit">
+			</select></br>
+			</br><input type="submit" id="difficultySubmit" value="Submit">
 		</div>
 
 		<div id="ui_register">

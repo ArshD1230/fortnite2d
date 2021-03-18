@@ -323,13 +323,15 @@ function updateProfile() {
 
         $.ajax({
                 method: "PUT",
-                url: "/api/user",
+                url: "/api/auth/user",
+                headers: { "Authorization": "Basic " + btoa(credentials.username + ":" + credentials.password) },
                 data: JSON.stringify(values),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 processData: false
         }).done(function(data, text_status, jqXHR) {
                 credentials["username"] = values["newUsername"];
+                $("#profileSuccess").html("Success!");
         }).fail(function(err) {
                 console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON));
         });
@@ -376,6 +378,7 @@ $(function(){
         $("#profileSubmit").on('click', function(){
                 hideAll();
                 $("#ui_profile").show();
+                $("#profileSuccess").html("");
                 loadProfile();
         });
         
