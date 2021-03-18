@@ -125,7 +125,15 @@ app.put('/api/auth/user', function(req, res) {
 	DAO.updateUser(newUsername, oldUsername, password, birthday, skill);
 	res.status(200);
 	res.json({});
-})
+});
+
+app.delete('/api/auth/user', function(req, res) {
+	var username = req.body.username;
+	console.log("delete" + username);
+	DAO.deleteUser(username);
+	res.status(200);
+	res.send();
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 

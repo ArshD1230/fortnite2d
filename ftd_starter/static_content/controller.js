@@ -343,6 +343,24 @@ function updateProfile() {
         });
 }
 
+function deleteProfile() {
+        $.ajax({
+                method: "DELETE",
+                url: "/api/auth/user",
+                headers: { "Authorization": "Basic " + btoa(credentials.username + ":" + credentials.password) },
+                data: JSON.stringify({username: credentials["username"]}),
+                contentType: "application/json; charset=utf-8",
+                processData: false
+        }).done(function(data, text_status, jqXHR) {
+                console.log("done");
+        }).fail(function(err) {
+                console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON));
+        });
+        hideAll();
+        $("nav").hide();
+        $("#ui_login").show();
+}
+
 function hideAll() {
         $("#ui_login").hide(); 
         $("#ui_register").hide();
@@ -417,6 +435,10 @@ $(function(){
                 pauseGame();
                 setupGame(difficulty);
                 startGame();
+        })
+
+        $("#profileDelete").on('click', function(){
+                deleteProfile();
         })
 
 
