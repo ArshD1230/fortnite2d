@@ -76,6 +76,15 @@
 			.select-items {
 				padding: 5px;
 			}
+			#profileDelete {
+				border: 1px solid red;
+				color: red;
+			}
+			#profileDelete:hover {
+				border: 1px solid #e5e5e5;
+				background-color: red;
+				color: white;
+			}
 
 		</style>
 		<title>Fortnite</title>
@@ -151,6 +160,8 @@
 
 			<br><input type="submit" id="update" value="Update">
 			<p id="profileSuccess"></p>
+
+			</br><input type="submit" id="profileDelete" title="All information will be lost" value="Delete Account">
 		</div>
 		
 		<div id="ui_difficulty">
@@ -160,8 +171,8 @@
 				<option value="easy">Easy</option>
 				<option value="medium">Medium</option>
 				<option value="hard">Hard</option>
-			</select>
-		</br><input type="submit" id="difficultySubmit" value="Submit">
+			</select></br>
+			</br><input type="submit" id="difficultySubmit" value="Submit">
 		</div>
 
 		<div id="ui_register">

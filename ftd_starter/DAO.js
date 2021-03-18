@@ -52,5 +52,13 @@ module.exports = {
                 }
             })
         }
+    },
+    deleteUser: function(username) {
+        let sql = 'DELETE from ftduser where username=$1';
+        pool.query(sql, [username], (err, pgRes) => {
+            if (err) {
+                console.log(error);
+            }
+        })
     }
 }
