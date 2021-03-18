@@ -131,14 +131,14 @@ class Stage {
 
 		// spawn assassin enemy
 		if (this.assassinSpawnTimer + 1 == this.assassinSpawnRate) {
-			var newAssassin = new Enemy(this, new Pair(rand(this.width), rand(this.height)), 10, 'purple', 400, 750, 1);
+			var newAssassin = new Enemy(this, new Pair(rand(this.width), rand(this.height)), 10, 'purple', 400, 400, 1);
 			this.addActor(newAssassin);
 		}
 		this.assassinSpawnTimer = (this.assassinSpawnTimer + 1) % this.assassinSpawnRate;
 
-		// spawn assassin enemy
+		// spawn tank enemy
 		if (this.tankSpawnTimer + 1 == this.tankSpawnRate) {
-			var newTank = new Enemy(this, new Pair(rand(this.width), rand(this.height)), 50, 'grey', 2000, 250, 1/3);
+			var newTank = new Enemy(this, new Pair(rand(this.width), rand(this.height)), 50, 'grey', 2000, 100, 1/3);
 			this.addActor(newTank);
 		}
 		this.tankSpawnTimer = (this.tankSpawnTimer + 1) % this.tankSpawnRate;
@@ -174,7 +174,14 @@ class Stage {
 		context.fillText("HEALTH: " + this.player.health, this.player.x - 100, this.player.y + 375);
 		context.fillText("SCORE: " + this.player.score, this.player.x + 225, this.player.y - 350);
 		context.fillText("HEALS: " + this.player.healthPacks, this.player.x + 225, this.player.y + 375);
-
+		var currWeapon;
+		if (this.player.currWeapon == 0) {
+			currWeapon = 'Assault Rifle';
+		}
+		else {
+			currWeapon = 'Shotgun';
+		}
+		context.fillText("WEAPON: " + currWeapon, this.player.x - 375, this.player.y + 325);
 		context.restore();
 	}
 
@@ -286,7 +293,7 @@ class AmmoBox extends Box {
 	constructor(stage, position, size){
 		super(stage, position, size);
 		this.colour = 'rgba('+randint(255)+','+randint(255)+','+randint(255)+')';
-		this.health = 6;
+		this.health = 100;
 	}
 }
 
@@ -387,6 +394,12 @@ class Player extends gameCharacter {
 		this.healthPacks = 0;
 		this.turretOffset = new Pair(0, -10);
 		this.score = 0;
+		this.currWeapon = 0;
+	}
+
+	switchWeapon() {
+		this.currWeapon = !this.currWeapon;
+		console.log(this.currWeapon);
 	}
 
 	pickupHealthPack() {
@@ -412,9 +425,21 @@ class Player extends gameCharacter {
 		if (!this.canShoot()) {
 			return;
 		}
-		var projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(this.position.x + (clientX - 400), this.position.y + (clientY - 400)));
+
+		var projectile;
+		var ammoUsage;
+
+		// AR is equipped
+		if (this.currWeapon == 0) {
+			projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(this.position.x + (clientX - 400), this.position.y + (clientY - 400)), 5, 3, 1000, 20);
+			ammoUsage = 1;
+		}
+		else {
+			projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(this.position.x + (clientX - 400), this.position.y + (clientY - 400)), 10, 1, 150, 50);
+			ammoUsage = 10;
+		}
 		this.stage.addActor(projectile);
-		this.ammo--;
+		this.ammo -= ammoUsage;
 	}
 
 	canShoot() {
@@ -466,6 +491,7 @@ class Enemy extends gameCharacter {
 		this.colour = colour;
 		this.speed = speed;
 		this.shootInterval = shootInterval;
+		this.shootTimer = 0;
 	}
 
 	calculateVelocity() {
@@ -489,37 +515,39 @@ class Enemy extends gameCharacter {
 	}
 
 	checkCanShoot() {
-		if (this.shootInterval == 0) {
+		if (this.shootTimer + 1 == this.shootInterval) {
 			this.shoot(this.stage.player.position.x, this.stage.player.position.y);
 		}
-		this.shootInterval = (this.shootInterval + 1) % 1000;
+		this.shootTimer = (this.shootTimer + 1) % this.shootInterval;
 	}
 
 	// create new bullet and shoot
 	shoot(x, y) {
-		var projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(x, y));
+		var projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(x, y), 5, 3, 1000, 20);
 		this.stage.addActor(projectile);
 	}
 }
 
 // class for projectiles (bullets)
 class Projectile {
-	constructor(owner, stage, projectileOrigin, clickPosition) {
+	constructor(owner, stage, projectileOrigin, clickPosition, radius, speedMultiplier, ttl, damage) {
 		
 		// assign attributes
 		this.owner = owner;
+		this.damage = damage;
 		this.projectileOrigin = projectileOrigin;
 		this.position = new Pair(projectileOrigin.x, projectileOrigin.y);
-		this.radius = 5;
+		this.radius = radius;
+		this.speedMultiplier = speedMultiplier
 		this.stage = stage;
 		this.setVelocity(projectileOrigin, clickPosition);
-		this.ttl = 1000; // time to live in number of steps
+		this.ttl = ttl; // time to live in number of steps
 	}
 
 	// calculate velocity of this projectile using the coordinates of the user's click
 	setVelocity (projectileOrigin, clickPosition) {
 		var angle = Math.atan2(clickPosition.y - projectileOrigin.y, clickPosition.x - projectileOrigin.x);
-		this.velocity = new Pair(Math.cos(angle)*3, Math.sin(angle)*3);
+		this.velocity = new Pair(Math.cos(angle) * this.speedMultiplier, Math.sin(angle) * this.speedMultiplier);
 	}
 
 	step(){
@@ -570,13 +598,13 @@ class Projectile {
 		
 		var box = this.stage.checkBoxAt(this.position.x, this.position.y, this);
 		if (box != false) {
-			box.takeDamage(1);
+			box.takeDamage(this.damage);
 			this.killProjectile();
 		}
 		
 		var actor = this.stage.checkActorAt(this);
 		if (actor != false && actor != this.owner) {
-			actor.takeDamage(20);
+			actor.takeDamage(this.damage);
 			this.killProjectile();
 		}
 	}

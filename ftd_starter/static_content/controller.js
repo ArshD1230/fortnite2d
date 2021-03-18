@@ -13,6 +13,7 @@ function setupGame(difficulty){
         document.addEventListener('keydown', pickupAmmoByClick);
         document.getElementById('stage').addEventListener('mousemove', adjustTurret);
         document.addEventListener('keyup', healByClick);
+        document.addEventListener('keyup', switchWeaponByClick);
 }
 
 function gameStep() {
@@ -32,6 +33,12 @@ function startGame(){
 function pauseGame(){
 	clearInterval(interval);
 	interval=null;
+}
+
+function switchWeaponByClick(event) {
+        if (event.key == 'q') {
+                stage.player.switchWeapon();
+        }
 }
 
 function adjustTurret(event) {
