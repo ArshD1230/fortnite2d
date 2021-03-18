@@ -58,7 +58,30 @@
 		</div>
 
 		<div id="ui_profile">
+			<p id="usernameProfileError" class="error"></p>
+			<label for="newusernameProfile">Username:</label><br>
+			<input type="text" id="newusernameProfile" name="newusername" required><br>
+			
+			<p id="passwordProfileError" class="error"></p>
+			<label for="pwd">Password:</label><br>
+			<input type="password" id="pwdProfile" name="pwd" minlength="8"><br>
+			<label for="pwd">Re-enter Password:</label><br>
+			<input type="password" id="pwd2Profile" name="pwd2" minlength="8"><br>
 
+			<p id="skillProfileError" class="error"></p>
+			Skill Level: 
+			<input type="radio" id="beginnerProfile" name="skill" value="Beginner">
+			<label for="beginner">Beginner</label>
+			<input type="radio" id="intermediateProfile" name="skill" value="Intermediate">
+			<label for="intermediate">Intermediate</label>
+			<input type="radio" id="proProfile" name="skill" value="Pro">
+			<label for="pro">Pro</label><br>
+
+			<p id="birthdayProfileError" class="error"></p>
+			<label for="birthday">Birthday:</label>
+			<input type="date" id="birthdayProfile" name="birthday" ></br>
+
+			<input type="submit" id="update" value="Update">
 		</div>
 		
 		<div id="ui_register">

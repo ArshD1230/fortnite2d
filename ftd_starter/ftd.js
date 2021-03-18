@@ -31,11 +31,11 @@ app.post('/api/test', function (req, res) {
 	res.json({"message":"got here"}); 
 });
 
-app.post('/api/register', function(req, res) {
+app.post('/api/user', function(req, res) {
 	var username = req.body.username;
 	var password = req.body.password;
 	var birthday = req.body.birthday;
-	console.log('birthday' + birthday);
+	//console.log('birthday' + birthday);
 	var skill = req.body.skill;
 
 
@@ -43,6 +43,35 @@ app.post('/api/register', function(req, res) {
 	res.status(200);
 	res.json({});
 });
+
+app.get('/api/user/:username', function(req, res) {
+	//var username = req.body.username;
+	var username = req.params.username;
+	//console.log("u" + username);
+	DAO.getUser(username, function(error, result) {
+		if (result == 'na') {
+			res.status(201); //user does not exist
+			res.send();
+		} else if (!error) {
+			res.status(200);
+			res.json(result);
+		} else {
+			console.log(error);
+		}
+	});
+});
+
+app.put('/api/user', function(req, res) {
+	var newUsername = req.body.newUsername;
+	var oldUsername = req.body.oldUsername;
+	var password = req.body.password;
+	var birthday = req.body.birthday;
+	var skill = req.body.skill;
+
+	DAO.updateUser(newUsername, oldUsername, password, birthday, skill);
+	res.status(200);
+	res.json({});
+})
 
 
 /** 
