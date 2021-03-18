@@ -4,7 +4,7 @@ var interval=null;
 var credentials={ "username": "", "password":"" };
 
 function setupGame(){
-	stage=new Stage(document.getElementById('stage'), 0);
+	stage=new Stage(document.getElementById('stage'), 2);
 
         // events
 	document.addEventListener('keydown', moveByKey);
