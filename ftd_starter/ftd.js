@@ -5,7 +5,9 @@
 var port = 8000; 
 var express = require('express');
 var app = express();
-const DAO = require('./DAO')
+const DAO = require('./DAO');
+
+var path = require('path');
 
 const { Pool } = require('pg')
 const pool = new Pool({
@@ -123,6 +125,8 @@ app.post('/api/auth/test', function (req, res) {
 	res.status(200); 
 	res.json({"message":"got to /api/auth/test"}); 
 });
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/',express.static('static_content')); 
 
