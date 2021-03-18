@@ -1,10 +1,9 @@
 var stage=null;
 var view = null;
 var interval=null;
-var difficulty = null;
 var credentials={ "username": "", "password":"" };
 
-function setupGame(){
+function setupGame(difficulty){
 	stage=new Stage(document.getElementById('stage'), difficulty);
 
         // events
@@ -390,14 +389,15 @@ $(function(){
         });
 
         $("#difficultySubmit").on('click', function(){
+                var difficulty;
                 if ($("#difficulty").val() == 'easy') {
-                        difficulty = 3;
+                        difficulty = 0;
                 } else if ($("#difficulty").val() == 'medium') {
-                        difficulty = 2;
-                } else if ($("#difficulty").val() == 'hard') {
                         difficulty = 1;
+                } else if ($("#difficulty").val() == 'hard') {
+                        difficulty = 2;
                 }
-                setupGame();
+                setupGame(difficulty)
                 startGame();
                 hideAll();
                 $("#ui_play").show();
@@ -406,7 +406,7 @@ $(function(){
 
         $("#playRestart").on('click', function() {
                 pauseGame();
-                setupGame();
+                setupGame(difficulty);
                 startGame();
         })
 

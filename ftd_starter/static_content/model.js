@@ -10,13 +10,13 @@ class Stage {
 		this.staticActors=[]; // all actors on this stage that dont move (boxes, map)
 		this.player=null; // a special actor, the player
 		this.difficulty = difficulty;	// lower number = more difficult
-		this.enemySpawnRate = 500 + (this.difficulty * 500);
+		this.enemySpawnRate = 2000 - (this.difficulty * 750);
 		this.enemySpawnTimer = 0;
-		this.boxSpawnRate = 5000
+		this.boxSpawnRate = 10000 - (this.difficulty * 250);
 		this.boxSpawnTimer = 0;
-		this.assassinSpawnRate = 10000;
+		this.assassinSpawnRate = 9000 - (this.difficulty * 1000);
 		this.assassinSpawnTimer = 0;
-		this.tankSpawnRate = 20000;
+		this.tankSpawnRate = 16000 - (this.difficulty * 1000);
 		this.tankSpawnTimer = 0;
 		this.boxMax = 10;
 		this.boxCount = 10;
@@ -177,20 +177,6 @@ class Stage {
 		}
 		return false;
 	}
-
-	/*
-	checkActorAt(x, y, collider) {
-		for (var i = 0; i < this.actors.length; i++) {
-			if (this.actors[i] instanceof gameCharacter && 
-				this.actors[i].x - 10 < x + 10 && x - 10 < this.actors[i].x + 10 &&
-				this.actors[i].y - 10 < y + 10 && y - 10 < this.actors[i].y + 10 &&
-				this.actors[i] != collider) {
-					return this.actors[i];
-			}
-		}
-		return false;
-	}
-	*/
 	
 	checkActorAt(collider) {
 		
@@ -218,15 +204,6 @@ class Stage {
 				}
 			}
 		}
-		/*
-		for (var i = 0; i < this.actors.length; i++) {
-			if (this.actors[i] instanceof gameCharacter && 
-				this.actors[i].x - 10 < colliderX + 10 && colliderX - 10 < this.actors[i].x + 10 &&
-				this.actors[i].y - 10 < colliderY + 10 && colliderY - 10 < this.actors[i].y + 10 &&
-				this.actors[i] != collider) {
-					return this.actors[i];
-			}
-		}*/
 		return false;
 	}
 	
@@ -473,7 +450,6 @@ class Projectile {
 		this.radius = 5;
 		this.stage = stage;
 		this.setVelocity(projectileOrigin, clickPosition);
-		//this.position = new Pair(projectileOrigin.x + 10 * this.velocity.x, projectileOrigin.y + 10 * this.velocity.y);
 		this.ttl = 1000; // time to live in number of steps
 	}
 
