@@ -2,7 +2,14 @@
 // https://medium.com/@viral_shah/express-middlewares-demystified-f0c2c37ea6a1
 // https://www.sohamkamani.com/blog/2018/05/30/understanding-how-expressjs-works/
 
-var port = 8000; 
+var PORT;
+if (process.argv.length < 3) {
+	PORT = 8000;
+} else {
+	PORT = process.argv[2];
+}
+
+var port = PORT; 
 var express = require('express');
 var app = express();
 const DAO = require('./DAO');
