@@ -257,7 +257,6 @@ function loadProfile() {
                 //contentType: "application/json; charset=utf-8",
                 dataType: "json",
         }).done(function(data, text_status, jqXHR) {
-                //console.log(data['skill']);
                 if (data['skill'] == 'beginner') {
                         $("#beginnerProfile").prop("checked", true);
                 } else if (data['skill'] == 'intermediate') {
@@ -374,9 +373,7 @@ function deleteProfile() {
                 data: JSON.stringify({username: credentials["username"]}),
                 contentType: "application/json; charset=utf-8",
                 processData: false
-        }).done(function(data, text_status, jqXHR) {
-                console.log("done");
-        }).fail(function(err) {
+        }).done(function(data, text_status, jqXHR) {}).fail(function(err) {
                 console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON));
         });
         hideAll();
@@ -394,9 +391,7 @@ function updateScore(score) {
                 data: JSON.stringify({username: credentials["username"], score: (difficulty+1)*score}),
                 contentType: "application/json; charset=utf-8",
                 processData: false
-        }).done(function(data, text_status, jqXHR) {
-                console.log("high score updated");
-        }).fail(function(err) {
+        }).done(function(data, text_status, jqXHR) {}).fail(function(err) {
                 console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON))
         });
 }

@@ -23,18 +23,16 @@ module.exports = {
         pool.query(sql, [username], (err, pgRes) => {
             if (err) {
                 callback(error);
-                console.log(stack);
+                console.log(err.stack);
             } else if (pgRes.rowCount == 0) {
                 callback(0, 'na');
             } else {
-                //console.log(pgRes.rows);
                 var user = {
                     "birthday" : "",
                     "skill": ""
                 };
                 user["birthday"] = pgRes.rows[0]['birthday'];
                 user["skill"] = pgRes.rows[0]['skill'];
-                //console.log(user);
                 callback(0, user);  
             }
         });
@@ -44,7 +42,7 @@ module.exports = {
         let sql = 'SELECT username, highscore from ftduser ORDER BY highscore DESC LIMIT 10';
         pool.query(sql, [], (err, pgRes) => {
             if (err) {
-                console.log(err);
+                console.log(err.stack);
             } else {
                 var users = {};
                 var i;
@@ -61,14 +59,14 @@ module.exports = {
         let sql = 'UPDATE ftduser SET birthday=$1, skill=$2, username=$3 where username = $4';
         pool.query(sql, [birthday, skill, newUsername, oldUsername], (err, pgRes) => {
             if (err) {
-                console.log(stack);
+                console.log(err.stack);
             }
         });
         if (password != "") {
             sql = 'UPDATE ftduser SET password=sha512($1) where username=$2';
             pool.query(sql, [password, newUsername], (err, pgRes) => {
                 if (err) {
-                    console.log(stack);
+                    console.log(err.stack);
                 }
             })
         }
@@ -78,7 +76,7 @@ module.exports = {
         let sql = 'DELETE from ftduser where username=$1';
         pool.query(sql, [username], (err, pgRes) => {
             if (err) {
-                console.log(stack);
+                console.log(err.stack);
             }
         })
     },
@@ -87,13 +85,13 @@ module.exports = {
         let sql = 'SELECT highscore FROM ftduser where username=$1';
         pool.query(sql, [username], (err, pgRes) => {
             if (err) {
-                console.log(err);
+                console.log(err.stack);
             } else {
                 if (pgRes.rows[0]['highscore'] < score) {
                     sql = 'UPDATE ftduser SET highscore=$1 where username=$2';
                     pool.query(sql, [score, username], (err, pgRes) => {
                         if (err) {
-                            console.log(stack);
+                            console.log(err.stack);
                         }
                     })
                 }

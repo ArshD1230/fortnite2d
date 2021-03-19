@@ -23,9 +23,7 @@ const bodyParser = require('body-parser'); // we used this middleware to parse P
 function isObject(o){ return typeof o === 'object' && o !== null; }
 function isNaturalNumber(value) { return /^\d+$/.test(value); }
 
-// app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-// app.use(bodyParser.raw()); // support raw bodies
 
 // Non authenticated route. Can visit this without credentials
 app.post('/api/test', function (req, res) {
@@ -78,7 +76,6 @@ app.use('/api/auth', function (req, res,next) {
 		return res.status(403).json({ error: 'No credentials sent!' });
   	}
 	try {
-		// var credentialsString = Buffer.from(req.headers.authorization.split(" ")[1], 'base64').toString();
 		var m = /^Basic\s+(.*)$/.exec(req.headers.authorization);
 
 		var user_pass = Buffer.from(m[1], 'base64').toString()
