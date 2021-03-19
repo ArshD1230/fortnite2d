@@ -185,8 +185,7 @@ class Stage {
 		}
 		context.fillText("WEAPON: " + currWeapon, this.player.x - 375, this.player.y + 325);
 
-		// 
-		var dashRechargePercentage = 
+		// draw dash percentage 
 		context.fillText("DASH: " + Math.floor(100 * (this.player.dashRechargeTimer / this.player.dashRechargeTime)) + "%", this.player.x + 225, this.player.y + 325);
 		context.restore();
 	}
