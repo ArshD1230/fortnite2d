@@ -14,6 +14,7 @@ function setupGame(difficulty){
         document.getElementById('stage').addEventListener('mousemove', adjustTurret);
         document.addEventListener('keyup', healByClick);
         document.addEventListener('keyup', switchWeaponByClick);
+        document.addEventListener('keydown', dashByClick);
 }
 
 function gameStep() {
@@ -33,6 +34,14 @@ function startGame(){
 function pauseGame(){
 	clearInterval(interval);
 	interval=null;
+}
+
+function dashByClick(event) {
+        
+        // check if shift is pressed
+        if (event.shiftKey) {
+                stage.player.useDash();
+        }
 }
 
 function switchWeaponByClick(event) {
