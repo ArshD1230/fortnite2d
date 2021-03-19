@@ -37,6 +37,21 @@ module.exports = {
             }
         });
     },
+    getUsers: function(callback) {
+        let sql = 'SELECT username, highscore from ftduser ORDER BY highscore DESC';
+        pool.query(sql, [], (err, pgRes) => {
+            if (err) {
+                console.log(err);
+            } else {
+                var users = {};
+                var i;
+                for (i = 0; i < pgRes.rowCount; i++) {
+                    users[pgRes.rows[i]['username']] = pgRes.rows[i]['highscore'];
+                }
+                callback(users);
+            }
+        })
+    },
     updateUser: function(newUsername, oldUsername, password, birthday, skill) {
         let sql = 'UPDATE ftduser SET birthday=$1, skill=$2, username=$3 where username = $4';
         pool.query(sql, [birthday, skill, newUsername, oldUsername], (err, pgRes) => {
