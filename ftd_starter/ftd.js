@@ -143,6 +143,13 @@ app.delete('/api/auth/user', function(req, res) {
 	res.send();
 });
 
+app.get('/api/auth/user', function(req, res) {
+	DAO.getUsers(function(result) {
+		res.status(200);
+		res.json(result);
+	})
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/',express.static('static_content')); 

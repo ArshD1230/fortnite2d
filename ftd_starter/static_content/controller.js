@@ -383,6 +383,26 @@ function updateScore(score) {
         });
 }
 
+function loadLeaderboard(){
+        $.ajax({
+                method: "GET",
+                url: '/api/auth/user',
+                headers: { "Authorization": "Basic " + btoa(credentials.username + ":" + credentials.password) },
+                dataType: "json",
+                processData: false
+        }).done(function(data, text_status, jqXHR) {
+                //console.log(data);
+                var user;
+                var i = 1;
+                for (user in data) {
+                        $("#leaderboard").append(`<tr><td>${i}</td><td>${user}</td><td>${data[user]}</td></tr>`);
+                        i++;
+                }
+        }).fail(function(err) {
+                console.log("fail "+err.status+" "+JSON.stringify(err.responseJSON))
+        })
+}
+
 
 function hideAll() {
         $("#ui_login").hide(); 
@@ -414,6 +434,7 @@ $(function(){
 
         $("#leaderboardSubmit").on('click', function(){
                 hideAll();
+                loadLeaderboard();
                 $("#ui_leaderboard").show();
         });
 
