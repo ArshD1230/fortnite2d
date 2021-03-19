@@ -164,6 +164,8 @@ function test(){
         });
 }
 
+
+// use /api/user to create a new user in the db
 function register(){
         values = {
                 "username": $('#newusername').val(),
@@ -172,6 +174,8 @@ function register(){
                 "skill": "",
                 "birthday": $("#birthday").val()
         };
+
+        // check which skill level is selected
         if ($("#beginner").prop("checked") == true) {
                 values["skill"] = "beginner";
         } else if ($("#intermediate").prop("checked") == true) {
@@ -188,19 +192,23 @@ function register(){
         } else { 
                 $("#usernameError").html("");
         }
+
+        // check username is unique
         $.ajax({
                 method: "GET",
                 url: "api/user/" + values["username"],
                 async: false
         }).done(function(data, text_status, jqXHR){
                 if (jqXHR.status == 200) {
+                        // user was found
                         $("#usernameError").html("Username is taken")
                         error = 1;
                 } else {
                         $("#usernameError").html("");
                 }
         });
-        // check if passwords match
+
+        // check if passwords match and len > 8
         if (values["password"] != values["password2"]) {
                 $("#passwordError").html("Passwords do not match");
                 error = 1;
@@ -213,18 +221,21 @@ function register(){
         } else { 
                 $("#passwordError").html("");
         }
+
         if (values["birthday"] == "") {
                 $("#birthdayError").html("Please enter birthday");
                 error = 1;
         } else { 
                 $("#birthdayError").html("");
         }
+
         if (values["skill"] == "") {
                 $("#skillError").html("Please choose skill level");
                 error = 1;
         } else { 
                 $("#skillError").html("");
         }
+
         if (error) {
                 return;
         }
@@ -246,6 +257,7 @@ function register(){
         });
 }
 
+// use /api/user/:username to fetch user info and pre-fill fields 
 function loadProfile() {
         $.ajax({
                 method: "GET",
@@ -270,6 +282,8 @@ function loadProfile() {
         $("#newusernameProfile").val(credentials["username"]);
 };
 
+
+// send new values to /api/auth/user
 function updateProfile() {
         values = {
                 "oldUsername": credentials['username'],
@@ -359,6 +373,8 @@ function updateProfile() {
         });
 }
 
+
+// delete user using /api/auth/user and logout
 function deleteProfile() {
         $.ajax({
                 method: "DELETE",
@@ -377,6 +393,8 @@ function deleteProfile() {
         $("#ui_login").show();
 }
 
+// send score to db
+// users receive a higher score for playing harder difficulties
 function updateScore(score) {
         $.ajax({
                 method: "PUT",
@@ -392,6 +410,7 @@ function updateScore(score) {
         });
 }
 
+// get every users score and display them with a rank
 function loadLeaderboard(){
         $.ajax({
                 method: "GET",
@@ -414,7 +433,7 @@ function loadLeaderboard(){
         })
 }
 
-
+// hide all divs
 function hideAll() {
         $("#ui_login").hide(); 
         $("#ui_register").hide();
@@ -439,23 +458,27 @@ $(function(){
         });
 
         $("#playSubmit").on('click', function(){
+                startGame();
                 hideAll();
                 $("#ui_play").show();
         });
 
         $("#leaderboardSubmit").on('click', function(){
                 hideAll();
+                pauseGame();
                 loadLeaderboard();
                 $("#ui_leaderboard").show();
         });
 
         $("#instructionsSubmit").on('click', function(){
                 hideAll();
+                pauseGame();
                 $("#ui_instructions").show();
         });
 
         $("#profileSubmit").on('click', function(){
                 hideAll();
+                pauseGame();
                 $("#ui_profile").show();
                 $("#profileSuccess").html("");
                 loadProfile();
@@ -495,7 +518,6 @@ $(function(){
         $("#profileDelete").on('click', function(){
                 deleteProfile();
         })
-
 
         hideAll();
         $("nav").hide();

@@ -8,6 +8,7 @@ const pool = new Pool({
 });
 
 module.exports = {
+    // add new user to db
     createUser: function(username, password, birthday, skill) {
         let sql = 'INSERT INTO ftduser(username, password, birthday, skill) VALUES ($1, sha512($2), $3, $4)';
 	    pool.query(sql, [username, password, birthday, skill], (err, pgRes) => {
@@ -16,6 +17,7 @@ module.exports = {
             }
 	    });
     },
+    // return birthday, skill from db using username
     getUser: function(username, callback) {
         let sql = 'SELECT birthday, skill FROM ftduser where username=$1';
         pool.query(sql, [username], (err, pgRes) => {
@@ -37,8 +39,9 @@ module.exports = {
             }
         });
     },
+    // return 10 users with the highest scores
     getUsers: function(callback) {
-        let sql = 'SELECT username, highscore from ftduser ORDER BY highscore DESC';
+        let sql = 'SELECT username, highscore from ftduser ORDER BY highscore DESC LIMIT 10';
         pool.query(sql, [], (err, pgRes) => {
             if (err) {
                 console.log(err);
@@ -52,6 +55,8 @@ module.exports = {
             }
         })
     },
+    // update user attributes
+    // update password only if a new password is submitted
     updateUser: function(newUsername, oldUsername, password, birthday, skill) {
         let sql = 'UPDATE ftduser SET birthday=$1, skill=$2, username=$3 where username = $4';
         pool.query(sql, [birthday, skill, newUsername, oldUsername], (err, pgRes) => {
@@ -68,6 +73,7 @@ module.exports = {
             })
         }
     },
+    // remove user from db
     deleteUser: function(username) {
         let sql = 'DELETE from ftduser where username=$1';
         pool.query(sql, [username], (err, pgRes) => {
@@ -76,6 +82,7 @@ module.exports = {
             }
         })
     },
+    // update a users highscore if score > highscore
     updateScore: function(username, score) {
         let sql = 'SELECT highscore FROM ftduser where username=$1';
         pool.query(sql, [username], (err, pgRes) => {
