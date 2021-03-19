@@ -392,6 +392,8 @@ function loadLeaderboard(){
                 processData: false
         }).done(function(data, text_status, jqXHR) {
                 //console.log(data);
+                $("#leaderboard").html("");
+                $("#leaderboard").append("<tr><th>Rank</th><th>Player</th><th>High Score</th></tr>");
                 var user;
                 var i = 1;
                 for (user in data) {
