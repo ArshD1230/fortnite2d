@@ -138,7 +138,7 @@ class Stage {
 
 		// spawn tank enemy
 		if (this.tankSpawnTimer + 1 == this.tankSpawnRate) {
-			var newTank = new Enemy(this, new Pair(rand(this.width), rand(this.height)), 50, 'grey', 2000, 100, 1/3);
+			var newTank = new Enemy(this, new Pair(rand(this.width), rand(this.height)), 50, 'grey', 1500, 100, 1/3);
 			this.addActor(newTank);
 		}
 		this.tankSpawnTimer = (this.tankSpawnTimer + 1) % this.tankSpawnRate;
@@ -174,6 +174,8 @@ class Stage {
 		context.fillText("HEALTH: " + this.player.health, this.player.x - 100, this.player.y + 375);
 		context.fillText("SCORE: " + this.player.score, this.player.x + 225, this.player.y - 350);
 		context.fillText("HEALS: " + this.player.healthPacks, this.player.x + 225, this.player.y + 375);
+		
+		// draw current weapon
 		var currWeapon;
 		if (this.player.currWeapon == 0) {
 			currWeapon = 'Assault Rifle';
@@ -182,6 +184,10 @@ class Stage {
 			currWeapon = 'Shotgun';
 		}
 		context.fillText("WEAPON: " + currWeapon, this.player.x - 375, this.player.y + 325);
+
+		// 
+		var dashRechargePercentage = 
+		context.fillText("DASH: " + Math.floor(100 * (this.player.dashRechargeTimer / this.player.dashRechargeTime)) + "%", this.player.x + 225, this.player.y + 325);
 		context.restore();
 	}
 
@@ -390,6 +396,11 @@ class Player extends gameCharacter {
 		this.colour = colour;
 		this.radius = radius;
 		this.health = 200;
+		this.dashLength = 100;
+		this.dashTimer = 0;
+		this.dashRechargeTime = 10000;
+		this.dashRechargeTimer = 0;
+		this.inDash = false;
 		this.ammo = 30;
 		this.healthPacks = 0;
 		this.turretOffset = new Pair(0, -10);
@@ -399,11 +410,40 @@ class Player extends gameCharacter {
 
 	switchWeapon() {
 		this.currWeapon = !this.currWeapon;
-		console.log(this.currWeapon);
 	}
 
 	pickupHealthPack() {
 		this.healthPacks++;
+	}
+
+	useDash() {
+
+		if (this.dashRechargeTimer == this.dashRechargeTime) {
+			this.velocity = new Pair(this.velocity.x * 5, this.velocity.y * 5);
+			this.inDash = true;
+			this.dashRechargeTimer = 0;
+		}
+	}
+
+	step() {
+
+		// if we're mid-dash
+		if (this.inDash) {
+
+			// if timer for dash is up
+			if(this.dashTimer >= this.dashLength) {
+				this.velocity = new Pair(this.velocity.x * 1/5, this.velocity.y * 1/5);
+				this.inDash = false;
+				this.dashTimer = 0;
+			}
+			else {
+				this.dashTimer++;
+			}
+		}
+		else if (this.dashRechargeTimer != this.dashRechargeTime) {
+			this.dashRechargeTimer++;
+		}
+		super.step();
 	}
 
 	useHealthPack() {
@@ -427,7 +467,7 @@ class Player extends gameCharacter {
 		}
 
 		var projectile;
-		var ammoUsage;
+		var ammoUsage = 0;
 
 		// AR is equipped
 		if (this.currWeapon == 0) {
@@ -435,8 +475,11 @@ class Player extends gameCharacter {
 			ammoUsage = 1;
 		}
 		else {
-			projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(this.position.x + (clientX - 400), this.position.y + (clientY - 400)), 10, 1, 150, 50);
-			ammoUsage = 10;
+			if (this.ammo >= 10) {
+				projectile = new Projectile(this, stage, new Pair(this.position.x, this.position.y), new Pair(this.position.x + (clientX - 400), this.position.y + (clientY - 400)), 10, 1, 150, 50);
+				ammoUsage = 10;
+			}
+			else {return;}
 		}
 		this.stage.addActor(projectile);
 		this.ammo -= ammoUsage;
