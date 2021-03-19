@@ -39,7 +39,7 @@ module.exports = {
             }
         });
     },
-    // return all users and their high scores
+    // return 10 users with the highest scores
     getUsers: function(callback) {
         let sql = 'SELECT username, highscore from ftduser ORDER BY highscore DESC LIMIT 10';
         pool.query(sql, [], (err, pgRes) => {
